@@ -184,8 +184,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <div className="space-y-3">
                   {data.education.map((edu) => {
                     const eduSubtitles = [
-                      ...[edu.degree, edu.location, edu.gpaOrHonors].filter(Boolean),
+                      ...[edu.degree, edu.gpaOrHonors].filter(Boolean),
                       ...(edu.subtitles && edu.subtitles.length > 0 ? edu.subtitles : []),
+                      ...(edu.location ? [edu.location] : []),
                     ];
                     return (
                       <div key={edu.id} className="break-inside-avoid">
@@ -227,8 +228,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <div className="space-y-4">
                   {data.experience.map((exp) => {
                     const expSubtitles = [
-                      ...[exp.role, exp.location].filter(Boolean),
+                      ...[exp.role].filter(Boolean),
                       ...(exp.subtitles && exp.subtitles.length > 0 ? exp.subtitles : []),
+                      ...(exp.location ? [exp.location] : []),
                     ];
                     return (
                       <div key={exp.id} className="break-inside-avoid">
@@ -281,6 +283,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                     const projSubtitles = [
                       ...[proj.technologies].filter(Boolean),
                       ...(proj.subtitles && proj.subtitles.length > 0 ? proj.subtitles : []),
+                      ...(proj.location ? [proj.location] : []),
                     ];
                     return (
                       <div key={proj.id} className="break-inside-avoid">
@@ -404,8 +407,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <div className="space-y-3">
                    {data.workshops.map((ws) => {
                      const wsSubtitles = [
-                       ...[ws.organizer, ws.location, ws.link].filter(Boolean),
+                       ...[ws.organizer].filter(Boolean),
                        ...(ws.subtitles && ws.subtitles.length > 0 ? ws.subtitles : []),
+                       ...(ws.location ? [ws.location] : []),
+                       ...(ws.link ? [ws.link] : []),
                      ];
                      return (
                        <div key={ws.id} className="break-inside-avoid">
