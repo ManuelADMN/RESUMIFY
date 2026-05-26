@@ -4,7 +4,7 @@ import ResumeCanvas from './components/ResumeCanvas';
 import Editor from './components/Editor';
 import { INITIAL_RESUME_DATA, EMPTY_RESUME_DATA } from './constants';
 import { ResumeData } from './types';
-import { Printer, Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen } from 'lucide-react';
+import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -109,9 +109,8 @@ const App: React.FC = () => {
 
     setIsGeneratingPdf(true);
 
-    // html2pdf configuration
     const opt = {
-      margin: [10, 0, 10, 0], // Top, Left, Bottom, Right margins in mm. Left/Right 0 because canvas has padding. Top/Bottom for page breaks.
+      margin: [10, 0, 10, 0],
       filename: `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_CV.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
@@ -119,16 +118,11 @@ const App: React.FC = () => {
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // Use the window.html2pdf library loaded via CDN
     // @ts-ignore
     if (window.html2pdf) {
       // @ts-ignore
       window.html2pdf().set(opt).from(element).output('blob').then((pdfBlob) => {
-        // Encode our JSON data into the PDF by appending it at the very end as a PDF comment
-        // PDF comments start with % and are ignored by ATS and PDF parsers
-        const jsonStr = JSON.stringify(resumeData);
-        // We use base64 over the URI encoded string to avoid any characters that might break parsers
-        const encodedData = `\n%RESUMIFY_DATA:${btoa(encodeURIComponent(jsonStr))}%\n`;
+        const encodedData = `\n%RESUMIFY_DATA:${btoa(encodeURIComponent(JSON.stringify(resumeData)))}%\n`;
         const combinedBlob = new Blob([pdfBlob, encodedData], { type: 'application/pdf' });
         
         const url = URL.createObjectURL(combinedBlob);
@@ -149,13 +143,13 @@ const App: React.FC = () => {
   };
 
   const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(resumeData));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "cv_data.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    const blob = new Blob([JSON.stringify(resumeData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_') || 'cv'}_data.json`;
+    a.click();
+    URL.revokeObjectURL(url);
     setIsMenuOpen(false);
   };
 
@@ -373,7 +367,7 @@ const App: React.FC = () => {
                     {lang === 'es' ? 'ES' : 'EN'}
                 </Button>
                 <Button onClick={handleDownloadPDF} size="sm" disabled={isGeneratingPdf} className="bg-white text-black hover:bg-gray-200 font-semibold border-0 min-w-[150px]">
-                    {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Printer size={16} className="mr-2" />}
+                    {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown size={16} className="mr-2" />}
                     {isGeneratingPdf ? t('generating') : t('downloadPdf')}
                 </Button>
             </div>

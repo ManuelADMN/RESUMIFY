@@ -3,9 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 type Language = 'es' | 'en';
 
 type Translations = {
-  [key in Language]: {
-    [key: string]: string;
-  };
+  [key in Language]: { [key: string]: string };
 };
 
 const translations: Translations = {
@@ -15,9 +13,9 @@ const translations: Translations = {
     export: 'Guardar JSON',
     downloadPdf: 'Descargar PDF',
     generating: 'Generando...',
-    promptingGuide: 'Guía de Estructura JSON (Prompting)',
-    promptingDesc: 'Puedes copiar esta estructura y pedirle a una IA (como ChatGPT o Gemini) que extraiga tu información de tu viejo CV o perfil de LinkedIn y la adapte a este formato. Luego, simplemente guarda la respuesta en un archivo .json e impórtalo aquí.',
-    prompting: 'Prompting',
+    promptingGuide: 'Estructura JSON del CV',
+    promptingDesc: 'Copia esta estructura y úsala como plantilla para rellenar tu CV. También puedes importar directamente un archivo .json o un PDF exportado previamente desde Resumify.',
+    prompting: 'Ver estructura JSON',
     clearAll: 'Limpiar Todo',
     clearConfirm: '¿Estás seguro de que quieres borrar todos los datos de tu CV?',
     saveLocal: 'Guardar en el Navegador',
@@ -26,8 +24,9 @@ const translations: Translations = {
     noSavedResumes: 'No hay CVs guardados.',
     saveVersionName: 'Nombre del CV (ej: Data Scientist v2)',
     load: 'Cargar',
+    delete: 'Eliminar',
     versionSaved: '¡CV Guardado!',
-    
+
     // Resume Sections
     summary: 'Resumen',
     education: 'Educación',
@@ -35,7 +34,7 @@ const translations: Translations = {
     projects: 'Proyectos',
     certifications: 'Certificaciones',
     skills: 'Habilidades',
-    certLink: 'Link Certificación',
+    certLink: 'Ver Certificación',
 
     // Editor General
     personalInfo: 'Información Personal',
@@ -48,55 +47,56 @@ const translations: Translations = {
     linkedin: 'LinkedIn',
     github: 'GitHub',
     website: 'Sitio Web',
-    
+
     // Editor Actions
     add: 'Añadir',
     untitled: 'Sin Título',
     noDesc: 'Sin descripción',
-    delete: 'Eliminar',
     cancel: 'Cancelar',
     save: 'Guardar',
+    show: 'Mostrar sección',
+    hide: 'Ocultar sección',
     deleteConfirm: '¿Estás seguro de que quieres eliminar esto?',
-    
-    // Editor Education
+
+    // Education
     institution: 'Universidad / Escuela',
     degree: 'Título / Grado',
     startDate: 'Fecha Inicio',
     endDate: 'Fecha Fin',
     currentStudy: 'Actualmente estudiando',
-    gpa: 'Puntuación / GPA (Opcional)',
-    
-    // Editor Experience
+    gpa: 'Promedio / GPA (Opcional)',
+
+    // Experience
     company: 'Empresa',
     role: 'Cargo / Título',
     linkOptional: 'Enlace (Opcional)',
     descriptionAchievements: 'Descripción (Logros)',
     describeAchievement: '• Describe un logro...',
     addAchievement: '+ Añadir Logro',
-    
-    // Editor Projects
+
+    // Projects
     projectName: 'Nombre del Proyecto',
     techSubtitle: 'Tecnologías / Subtítulo',
     dates: 'Fechas',
-    linkText: 'Enlace Texto',
+    linkText: 'Enlace',
     addDetail: '+ Añadir Detalle',
-    
-    // Editor Certifications
+
+    // Certifications
     certName: 'Nombre de la Certificación',
     issuer: 'Emisor / Organización',
     date: 'Fecha',
     linkIdOptional: 'Enlace / ID Credencial (Opcional)',
-    
-    // Editor Skills
+
+    // Skills
     category: 'Categoría',
-    catPlace: 'Ej. Idiomas, Herramientas, Certificaciones',
-    itemsList: 'Elementos / Lista',
+    catPlace: 'Ej. Idiomas, Herramientas, Frameworks',
+    itemsList: 'Elementos',
     itemsPlace: 'Ej. Español, Inglés, Francés',
-    
+
     // Other
     present: 'Presente',
-    pdfError: 'La librería de PDF no se ha cargado correctamente. Por favor recarga la página.',
-    jsonError: 'Error al leer el archivo JSON. Asegúrate de que el formato sea correcto.',
+    pdfError: 'La librería de PDF no se ha cargado. Por favor recarga la página.',
+    jsonError: 'Error al leer el archivo. Asegúrate de que el formato sea correcto.',
   },
   en: {
     // App
@@ -104,9 +104,9 @@ const translations: Translations = {
     export: 'Save JSON',
     downloadPdf: 'Download PDF',
     generating: 'Generating...',
-    promptingGuide: 'JSON Structure Guide (Prompting)',
-    promptingDesc: 'You can copy this structure and ask an AI (like ChatGPT or Gemini) to extract your information from your old resume or LinkedIn profile and adapt it to this format. Then, simply save the response in a .json file and import it here.',
-    prompting: 'Prompting',
+    promptingGuide: 'Resume JSON Structure',
+    promptingDesc: 'Copy this structure and use it as a template to fill your resume. You can also import a .json file or a PDF previously exported from Resumify.',
+    prompting: 'View JSON structure',
     clearAll: 'Clear All',
     clearConfirm: 'Are you sure you want to clear all your resume data?',
     saveLocal: 'Save to Browser',
@@ -115,8 +115,9 @@ const translations: Translations = {
     noSavedResumes: 'No saved resumes found.',
     saveVersionName: 'Resume Name (e.g., Data Scientist v2)',
     load: 'Load',
+    delete: 'Delete',
     versionSaved: 'Resume Saved!',
-    
+
     // Resume Sections
     summary: 'Summary',
     education: 'Education',
@@ -124,7 +125,7 @@ const translations: Translations = {
     projects: 'Projects',
     certifications: 'Certifications',
     skills: 'Skills',
-    certLink: 'Certification Link',
+    certLink: 'View Certification',
 
     // Editor General
     personalInfo: 'Personal Information',
@@ -137,56 +138,57 @@ const translations: Translations = {
     linkedin: 'LinkedIn',
     github: 'GitHub',
     website: 'Website',
-    
+
     // Editor Actions
     add: 'Add',
     untitled: 'Untitled',
     noDesc: 'No description',
-    delete: 'Delete',
     cancel: 'Cancel',
     save: 'Save',
+    show: 'Show section',
+    hide: 'Hide section',
     deleteConfirm: 'Are you sure you want to delete this?',
-    
-    // Editor Education
+
+    // Education
     institution: 'University / School',
     degree: 'Degree / Major',
     startDate: 'Start Date',
     endDate: 'End Date',
     currentStudy: 'Currently studying',
     gpa: 'GPA / Honors (Optional)',
-    
-    // Editor Experience
+
+    // Experience
     company: 'Company',
     role: 'Role / Title',
     linkOptional: 'Link (Optional)',
     descriptionAchievements: 'Description (Achievements)',
     describeAchievement: '• Describe an achievement...',
     addAchievement: '+ Add Achievement',
-    
-    // Editor Projects
+
+    // Projects
     projectName: 'Project Name',
     techSubtitle: 'Technologies / Subtitle',
     dates: 'Dates',
-    linkText: 'Link Text',
+    linkText: 'Link',
     addDetail: '+ Add Detail',
-    
-    // Editor Certifications
+
+    // Certifications
     certName: 'Certification Name',
     issuer: 'Issuer / Organization',
     date: 'Date',
     linkIdOptional: 'Link / Credential ID (Optional)',
-    
-    // Editor Skills
+
+    // Skills
     category: 'Category',
-    catPlace: 'e.g. Languages, Tools, Certifications',
-    itemsList: 'Items / List',
+    catPlace: 'e.g. Languages, Tools, Frameworks',
+    itemsList: 'Items',
     itemsPlace: 'e.g. Spanish, English, French',
-    
+
     // Other
     present: 'Present',
-    pdfError: 'The PDF library did not load correctly. Please refresh the page.',
-    jsonError: 'Error reading JSON file. Make sure the format is correct.',
-  }
+    pdfError: 'The PDF library did not load. Please refresh the page.',
+    jsonError: 'Error reading the file. Make sure the format is correct.',
+  },
 };
 
 interface LanguageContextProps {
@@ -201,20 +203,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [lang, setLang] = useState<Language>('es');
 
   useEffect(() => {
-    // Detect system language
     const systemLang = navigator.language.split('-')[0];
-    if (systemLang === 'en') {
-      setLang('en');
-    }
+    if (systemLang === 'en') setLang('en');
   }, []);
 
-  const toggleLanguage = () => {
-    setLang(prev => (prev === 'es' ? 'en' : 'es'));
-  };
+  const toggleLanguage = () => setLang(prev => (prev === 'es' ? 'en' : 'es'));
 
-  const t = (key: string): string => {
-    return translations[lang][key] || key;
-  };
+  const t = (key: string): string => translations[lang][key] || key;
 
   return (
     <LanguageContext.Provider value={{ lang, t, toggleLanguage }}>
@@ -225,8 +220,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
+  if (!context) throw new Error('useLanguage must be used within a LanguageProvider');
   return context;
 };

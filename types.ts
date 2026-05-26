@@ -10,13 +10,13 @@ export interface ResumeData {
     github: string;
     location: string;
     website: string;
-    summary: string; // Added summary field
+    summary: string;
   };
   education: EducationItem[];
   experience: ExperienceItem[];
   projects: ProjectItem[];
   skills: SkillItem[];
-  certifications: CertificationItem[]; // Added certifications
+  certifications: CertificationItem[];
 }
 
 export interface SkillItem {
@@ -43,7 +43,7 @@ export interface ExperienceItem {
   startDate: string;
   endDate: string;
   bullets: string[];
-  link?: string; // For "Company | Link" format
+  link?: string;
 }
 
 export interface ProjectItem {
@@ -52,7 +52,7 @@ export interface ProjectItem {
   technologies: string;
   description: string[];
   link?: string;
-  date?: string; // Added date for projects
+  date?: string;
 }
 
 export interface CertificationItem {
@@ -64,9 +64,9 @@ export interface CertificationItem {
 }
 
 export enum SectionType {
-  EDUCATION = 'Educación',
-  EXPERIENCE = 'Experiencia',
-  PROJECTS = 'Proyectos',
-  SKILLS = 'Habilidades',
-  CERTIFICATIONS = 'Certificaciones'
+  EDUCATION = 'education',
+  EXPERIENCE = 'experience',
+  PROJECTS = 'projects',
+  SKILLS = 'skills',
+  CERTIFICATIONS = 'certifications'
 }

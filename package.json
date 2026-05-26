@@ -1,7 +1,8 @@
 {
-  "name": "constructor-de-cv",
+  "name": "resumify",
+  "description": "Constructor de CV moderno, ATS-friendly y de código abierto",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +12,6 @@
   "dependencies": {
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "@google/genai": "^1.31.0",
     "lucide-react": "^0.556.0"
   },
   "devDependencies": {
