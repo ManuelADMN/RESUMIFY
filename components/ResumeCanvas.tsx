@@ -252,7 +252,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                             {expSubtitles.map((sub, sIdx) => (
                               <React.Fragment key={sIdx}>
                                 {sIdx > 0 && <CenteredDivider />}
-                                <span className="italic">{sub}</span>
+                                <span>{sub}</span>
                               </React.Fragment>
                             ))}
                           </div>
@@ -305,7 +305,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                             {projSubtitles.map((sub, sIdx) => (
                               <React.Fragment key={sIdx}>
                                 {sIdx > 0 && <CenteredDivider />}
-                                <span className="italic">{sub}</span>
+                                <span>{sub}</span>
                               </React.Fragment>
                             ))}
                           </div>
@@ -427,7 +427,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                               {wsSubtitles.map((sub, sIdx) => (
                                 <React.Fragment key={sIdx}>
                                   {sIdx > 0 && <CenteredDivider />}
-                                  <span className="italic">
+                                  <span>
                                     {isUrl(sub) ? (
                                       <a 
                                         href={formatUrl(sub)} 

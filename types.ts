@@ -60,6 +60,7 @@ export interface ProjectItem {
   description: string[];
   link?: string;
   date?: string;
+  location?: string;
   subtitles?: string[];
 }
 
