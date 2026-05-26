@@ -28,7 +28,7 @@ const CenteredDivider: React.FC = () => (
 );
 
 const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const isUrl = (text: string) => {
     return text.startsWith('http') || text.startsWith('www') || text.includes('.com') || text.includes('.cl') || text.includes('.dev');
@@ -183,9 +183,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('education')} />
                 <div className="space-y-3">
                   {data.education.map((edu) => {
-                    const eduSubtitles = edu.subtitles && edu.subtitles.length > 0
-                      ? edu.subtitles
-                      : [edu.degree, edu.location, edu.gpaOrHonors].filter(Boolean);
+                    const eduSubtitles = [
+                      ...[edu.degree, edu.location, edu.gpaOrHonors].filter(Boolean),
+                      ...(edu.subtitles && edu.subtitles.length > 0 ? edu.subtitles : []),
+                    ];
                     return (
                       <div key={edu.id} className="break-inside-avoid">
                         <SplitRow 
@@ -225,9 +226,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('experience')} />
                 <div className="space-y-4">
                   {data.experience.map((exp) => {
-                    const expSubtitles = exp.subtitles && exp.subtitles.length > 0
-                      ? exp.subtitles
-                      : [exp.role, exp.location].filter(Boolean);
+                    const expSubtitles = [
+                      ...[exp.role, exp.location].filter(Boolean),
+                      ...(exp.subtitles && exp.subtitles.length > 0 ? exp.subtitles : []),
+                    ];
                     return (
                       <div key={exp.id} className="break-inside-avoid">
                         <SplitRow 
@@ -276,9 +278,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('projects')} />
                 <div className="space-y-3">
                   {data.projects.map((proj) => {
-                    const projSubtitles = proj.subtitles && proj.subtitles.length > 0
-                      ? proj.subtitles
-                      : [proj.technologies].filter(Boolean);
+                    const projSubtitles = [
+                      ...[proj.technologies].filter(Boolean),
+                      ...(proj.subtitles && proj.subtitles.length > 0 ? proj.subtitles : []),
+                    ];
                     return (
                       <div key={proj.id} className="break-inside-avoid">
                          <SplitRow 
@@ -400,9 +403,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('workshops')} />
                 <div className="space-y-3">
                    {data.workshops.map((ws) => {
-                     const wsSubtitles = ws.subtitles && ws.subtitles.length > 0
-                       ? ws.subtitles
-                       : [ws.organizer, ws.location, ws.link].filter(Boolean);
+                     const wsSubtitles = [
+                       ...[ws.organizer, ws.location, ws.link].filter(Boolean),
+                       ...(ws.subtitles && ws.subtitles.length > 0 ? ws.subtitles : []),
+                     ];
                      return (
                        <div key={ws.id} className="break-inside-avoid">
                           <SplitRow 
