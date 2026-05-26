@@ -133,7 +133,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 return (
                   <>
                   <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a>
                   </>
                 );
             })()}
@@ -142,7 +142,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 return (
                   <>
                   <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>
                   </>
                 );
             })()}
@@ -151,7 +151,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 return (
                   <>
                   <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">
+                    {lang === 'es' ? 'Sitio Web' : 'Website'}
+                  </a>
                   </>
                 );
             })()}
