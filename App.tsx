@@ -422,6 +422,10 @@ const App: React.FC = () => {
                   <option value="Inter">Inter ({lang === 'es' ? 'Limpia' : 'Clean'})</option>
                   <option value="Playfair Display">Playfair ({lang === 'es' ? 'Contraste' : 'High-contrast'})</option>
                   <option value="JetBrains Mono">JetBrains Mono ({lang === 'es' ? 'Tecnológica' : 'Tech'})</option>
+                  <option value="Arial">Arial ({lang === 'es' ? 'Sencilla' : 'Simple'})</option>
+                  <option value="Calibri">Calibri ({lang === 'es' ? 'Limpia' : 'Clean'})</option>
+                  <option value="Georgia">Georgia ({lang === 'es' ? 'Elegante Serif' : 'Elegant Serif'})</option>
+                  <option value="Times New Roman">Times New Roman ({lang === 'es' ? 'Académica' : 'Academic'})</option>
                 </select>
 
                 <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-gray-300 hover:bg-white/10 hover:text-white" title="Change Language">

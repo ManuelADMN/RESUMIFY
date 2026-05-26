@@ -40,6 +40,35 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     return text;
   };
 
+  const formatContactLink = (field: 'linkedin' | 'github' | 'website', value: string) => {
+    const cleanValue = value.trim().replace(/^https?:\/\/(www\.)?/, '').replace(/^www\./, '');
+    
+    if (field === 'linkedin') {
+      const username = cleanValue.replace(/^linkedin\.com\/in\//, '').replace(/^\/in\//, '').replace(/^@/, '');
+      return {
+        href: `https://linkedin.com/in/${username}`,
+        label: `linkedin.com/in/${username}`
+      };
+    }
+    
+    if (field === 'github') {
+      const username = cleanValue.replace(/^github\.com\//, '').replace(/^@/, '');
+      return {
+        href: `https://github.com/${username}`,
+        label: `github.com/${username}`
+      };
+    }
+    
+    if (field === 'website') {
+      return {
+        href: value.startsWith('http') ? value : `https://${value}`,
+        label: cleanValue
+      };
+    }
+    
+    return { href: value, label: value };
+  };
+
   const DateSpan: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <span className="text-[#666666] text-[9pt]">{children}</span>
   );
@@ -52,6 +81,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
       case 'Inter': return "'Inter', sans-serif";
       case 'Playfair Display': return "'Playfair Display', serif";
       case 'JetBrains Mono': return "'JetBrains Mono', monospace";
+      case 'Arial': return "Arial, Helvetica, sans-serif";
+      case 'Calibri': return 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
+      case 'Georgia': return "Georgia, serif";
+      case 'Times New Roman': return '"Times New Roman", Times, serif';
       case 'Merriweather':
       default:
         return "'Merriweather', serif";
@@ -95,24 +128,33 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <span>{data.personalInfo.location}</span>
                 </>
             )}
-            {data.personalInfo.linkedin && (
-                <>
-                <span className="mx-1">|</span>
-                <a href={formatUrl(data.personalInfo.linkedin)} target="_blank" rel="noreferrer" className="hover:underline">{data.personalInfo.linkedin}</a>
-                </>
-            )}
-             {data.personalInfo.github && (
-                <>
-                <span className="mx-1">|</span>
-                <a href={formatUrl(data.personalInfo.github)} target="_blank" rel="noreferrer" className="hover:underline">{data.personalInfo.github}</a>
-                </>
-            )}
-             {data.personalInfo.website && (
-                <>
-                <span className="mx-1">|</span>
-                <a href={formatUrl(data.personalInfo.website)} target="_blank" rel="noreferrer" className="hover:underline">{data.personalInfo.website}</a>
-                </>
-            )}
+            {data.personalInfo.linkedin && (() => {
+                const linkInfo = formatContactLink('linkedin', data.personalInfo.linkedin);
+                return (
+                  <>
+                  <span className="mx-1">|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  </>
+                );
+            })()}
+            {data.personalInfo.github && (() => {
+                const linkInfo = formatContactLink('github', data.personalInfo.github);
+                return (
+                  <>
+                  <span className="mx-1">|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  </>
+                );
+            })()}
+            {data.personalInfo.website && (() => {
+                const linkInfo = formatContactLink('website', data.personalInfo.website);
+                return (
+                  <>
+                  <span className="mx-1">|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">{linkInfo.label}</a>
+                  </>
+                );
+            })()}
         </div>
       </header>
 
