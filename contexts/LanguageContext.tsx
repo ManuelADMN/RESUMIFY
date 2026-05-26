@@ -73,6 +73,9 @@ const translations: Translations = {
     descriptionAchievements: 'Descripción (Logros)',
     describeAchievement: '• Describe un logro...',
     addAchievement: '+ Añadir Logro',
+    bulletsDescription: 'Descripción (Puntos Clave)',
+    describeBullet: '• Escribe un detalle o logro...',
+    addBullet: '+ Añadir Punto',
 
     // Projects
     projectName: 'Nombre del Proyecto',
@@ -92,6 +95,20 @@ const translations: Translations = {
     catPlace: 'Ej. Idiomas, Herramientas, Frameworks',
     itemsList: 'Elementos',
     itemsPlace: 'Ej. Español, Inglés, Francés',
+
+    // Workshops
+    workshops: 'Talleres / Conferencias',
+    workshopName: 'Nombre del Taller / Conferencia',
+    organizer: 'Organizador / Institución',
+    addWorkshop: '+ Añadir Taller/Conferencia',
+
+    // Links
+    links: 'Enlaces',
+    linkLabel: 'Título del Enlace',
+    linkUrl: 'URL del Enlace',
+    addLink: '+ Añadir Enlace',
+    subtitles: 'Subtítulos (Opcional)',
+    addSubtitle: '+ Añadir Subtítulo',
 
     // Other
     present: 'Presente',
@@ -164,6 +181,9 @@ const translations: Translations = {
     descriptionAchievements: 'Description (Achievements)',
     describeAchievement: '• Describe an achievement...',
     addAchievement: '+ Add Achievement',
+    bulletsDescription: 'Description (Bullet Points)',
+    describeBullet: '• Write a detail or achievement...',
+    addBullet: '+ Add Bullet',
 
     // Projects
     projectName: 'Project Name',
@@ -183,6 +203,20 @@ const translations: Translations = {
     catPlace: 'e.g. Languages, Tools, Frameworks',
     itemsList: 'Items',
     itemsPlace: 'e.g. Spanish, English, French',
+
+    // Workshops
+    workshops: 'Workshops / Conferences',
+    workshopName: 'Workshop / Conference Name',
+    organizer: 'Organizer / Institution',
+    addWorkshop: '+ Add Workshop/Conference',
+
+    // Links
+    links: 'Links',
+    linkLabel: 'Link Title',
+    linkUrl: 'Link URL',
+    addLink: '+ Add Link',
+    subtitles: 'Subtitles (Optional)',
+    addSubtitle: '+ Add Subtitle',
 
     // Other
     present: 'Present',

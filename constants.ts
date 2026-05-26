@@ -2,7 +2,7 @@
 import { ResumeData } from './types';
 
 export const INITIAL_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills'],
+  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "Juan Pérez",
@@ -115,11 +115,38 @@ export const INITIAL_RESUME_DATA: ResumeData = {
       date: "Mar 2023",
       link: ""
     }
-  ]
+  ],
+  workshops: [
+    {
+      id: "ws-1",
+      name: "Taller de React 19 y Next.js",
+      organizer: "Denoise Academy",
+      date: "Nov 2024",
+      location: "Remoto",
+      link: "denoise.cl/workshops",
+      bullets: [
+        "Aprendí patrones avanzados de React como Server Actions y Server Components.",
+        "Desarrollé una aplicación completa en producción utilizando Next.js App Router."
+      ]
+    }
+  ],
+  links: [
+    {
+      id: "link-1",
+      label: "Portafolio Personal",
+      url: "juanperez.dev"
+    },
+    {
+      id: "link-2",
+      label: "LinkedIn Profesional",
+      url: "linkedin.com/in/juanperez"
+    }
+  ],
+  font: "Merriweather"
 };
 
 export const EMPTY_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills'],
+  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "",
@@ -135,5 +162,8 @@ export const EMPTY_RESUME_DATA: ResumeData = {
   experience: [],
   projects: [],
   skills: [],
-  certifications: []
+  certifications: [],
+  workshops: [],
+  links: [],
+  font: "Merriweather"
 };

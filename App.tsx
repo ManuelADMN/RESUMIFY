@@ -29,6 +29,25 @@ const App: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('resumify_current_draft');
+    if (savedDraft) {
+      try {
+        setResumeData(JSON.parse(savedDraft));
+      } catch (e) {
+        console.error("Failed to load saved draft", e);
+      }
+    }
+  }, []);
+
+  // Save draft on change
+  useEffect(() => {
+    if (resumeData && resumeData !== INITIAL_RESUME_DATA && resumeData !== EMPTY_RESUME_DATA) {
+      localStorage.setItem('resumify_current_draft', JSON.stringify(resumeData));
+    }
+  }, [resumeData]);
+
   const promptingGuide = `{
   "personalInfo": {
     "fullName": "Tu Nombre Completo",
@@ -48,7 +67,10 @@ const App: React.FC = () => {
       "location": "Ciudad, País",
       "startDate": "Mes Año",
       "endDate": "Mes Año o Presente",
-      "gpaOrHonors": "Promedio o Honores (opcional)"
+      "gpaOrHonors": "Promedio o Honores (opcional)",
+      "bullets": [
+        "Detalle o logro académico destacado (opcional)"
+      ]
     }
   ],
   "experience": [
@@ -82,7 +104,10 @@ const App: React.FC = () => {
     {
       "id": "1",
       "category": "Lenguajes de Programación",
-      "items": "JavaScript, TypeScript, Python"
+      "items": "JavaScript, TypeScript, Python",
+      "bullets": [
+        "Detalle o logro relevante usando estas tecnologías (opcional)"
+      ]
     }
   ],
   "certifications": [
@@ -91,7 +116,30 @@ const App: React.FC = () => {
       "name": "Nombre de la Certificación",
       "issuer": "Institución Emisora",
       "date": "Mes Año",
-      "link": "Enlace a la credencial (opcional)"
+      "link": "Enlace a la credencial (opcional)",
+      "bullets": [
+        "Detalle o logro relevante de la certificación (opcional)"
+      ]
+    }
+  ],
+  "workshops": [
+    {
+      "id": "1",
+      "name": "Nombre del Taller / Conferencia",
+      "organizer": "Organizador / Institución",
+      "date": "Mes Año",
+      "location": "Ubicación (opcional)",
+      "link": "Enlace al taller/evento (opcional)",
+      "bullets": [
+        "Detalle o aprendizaje del taller (opcional)"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "1",
+      "label": "Título del Enlace",
+      "url": "enlace-url.com"
     }
   ]
 }`;
@@ -361,6 +409,20 @@ const App: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                <select
+                  value={resumeData.font || 'Merriweather'}
+                  onChange={(e) => setResumeData({ ...resumeData, font: e.target.value })}
+                  className="bg-[#1e293b] border border-gray-700 text-gray-300 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:text-white font-medium cursor-pointer"
+                >
+                  <option value="Merriweather">Merriweather ({lang === 'es' ? 'Elegante' : 'Elegant'})</option>
+                  <option value="EB Garamond">EB Garamond ({lang === 'es' ? 'Clásica' : 'Classic'})</option>
+                  <option value="Lora">Lora ({lang === 'es' ? 'Contemporánea' : 'Contemporary'})</option>
+                  <option value="Outfit">Outfit ({lang === 'es' ? 'Minimalista' : 'Minimalist'})</option>
+                  <option value="Inter">Inter ({lang === 'es' ? 'Limpia' : 'Clean'})</option>
+                  <option value="Playfair Display">Playfair ({lang === 'es' ? 'Contraste' : 'High-contrast'})</option>
+                  <option value="JetBrains Mono">JetBrains Mono ({lang === 'es' ? 'Tecnológica' : 'Tech'})</option>
+                </select>
 
                 <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-gray-300 hover:bg-white/10 hover:text-white" title="Change Language">
                     <Globe size={16} className="mr-2" />

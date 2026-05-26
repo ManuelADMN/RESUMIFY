@@ -15,7 +15,7 @@ interface EditorProps {
   onChange: (newData: ResumeData) => void;
 }
 
-type ModalType = 'education' | 'experience' | 'project' | 'skill' | 'certification' | null;
+type ModalType = 'education' | 'experience' | 'project' | 'skill' | 'certification' | 'workshop' | 'link' | null;
 
 interface EditingState {
   type: ModalType;
@@ -147,11 +147,13 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
   const openModal = (type: ModalType, item: any = null) => {
     let initialItem = item;
     if (!initialItem) {
-      if (type === 'education') initialItem = { id: crypto.randomUUID(), institution: '', degree: '', location: '', startDate: '', endDate: '', gpaOrHonors: '' };
-      if (type === 'experience') initialItem = { id: crypto.randomUUID(), company: '', role: '', location: '', startDate: '', endDate: t('present'), bullets: [''] };
-      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', date: '' };
-      if (type === 'skill') initialItem = { id: crypto.randomUUID(), category: '', items: '' };
-      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', date: '', link: '' };
+      if (type === 'education') initialItem = { id: crypto.randomUUID(), institution: '', degree: '', location: '', startDate: '', endDate: '', gpaOrHonors: '', bullets: [], subtitles: [] };
+      if (type === 'experience') initialItem = { id: crypto.randomUUID(), company: '', role: '', location: '', startDate: '', endDate: t('present'), bullets: [''], subtitles: [] };
+      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', date: '', subtitles: [] };
+      if (type === 'skill') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
+      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', date: '', link: '', bullets: [] };
+      if (type === 'workshop') initialItem = { id: crypto.randomUUID(), name: '', organizer: '', date: '', location: '', link: '', bullets: [], subtitles: [] };
+      if (type === 'link') initialItem = { id: crypto.randomUUID(), label: '', url: '' };
     }
     setTempItem(JSON.parse(JSON.stringify(initialItem)));
     setEditingState({ type, id: item ? item.id : null });
@@ -179,6 +181,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
       newData.skills = upsert(newData.skills, tempItem as SkillItem, editingState.id);
     } else if (editingState.type === 'certification') {
       newData.certifications = upsert(newData.certifications || [], tempItem as CertificationItem, editingState.id);
+    } else if (editingState.type === 'workshop') {
+      newData.workshops = upsert(newData.workshops || [], tempItem as WorkshopItem, editingState.id);
+    } else if (editingState.type === 'link') {
+      newData.links = upsert(newData.links || [], tempItem as LinkItem, editingState.id);
     }
 
     onChange(newData);
@@ -193,10 +199,12 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     if (type === 'project') newData.projects = newData.projects.filter(i => i.id !== id);
     if (type === 'skill') newData.skills = newData.skills.filter(i => i.id !== id);
     if (type === 'certification') newData.certifications = (newData.certifications || []).filter(i => i.id !== id);
+    if (type === 'workshop') newData.workshops = (newData.workshops || []).filter(i => i.id !== id);
+    if (type === 'link') newData.links = (newData.links || []).filter(i => i.id !== id);
     onChange(newData);
   };
 
-  const DEFAULT_SECTION_ORDER = ['education', 'experience', 'projects', 'certifications', 'skills'];
+  const DEFAULT_SECTION_ORDER = ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'];
 
   return (
     <div className="h-full bg-white p-6 space-y-6 pb-20">
@@ -360,6 +368,52 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                 </div>
               );
 
+            case 'workshops':
+              return (
+                <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
+                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                    <GripVertical className="h-5 w-5" />
+                  </div>
+                  <SectionHeader title={t('workshops')} icon={Award} onAdd={() => openModal('workshop')} onToggleVisibility={() => toggleSectionVisibility('workshops')} isHidden={isSectionHidden('workshops')} />
+                  <SortableList
+                    items={data.workshops || []}
+                    onReorder={(list) => onChange({ ...data, workshops: list })}
+                    keyExtractor={(i) => i.id}
+                    renderItem={(ws) => (
+                      <ListItemCard
+                        title={ws.name}
+                        subtitle={`${ws.organizer} • ${ws.date}`}
+                        onEdit={() => openModal('workshop', ws)}
+                        onDelete={(e) => { e.stopPropagation(); deleteItem('workshop', ws.id); }}
+                      />
+                    )}
+                  />
+                </div>
+              );
+
+            case 'links':
+              return (
+                <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
+                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                    <GripVertical className="h-5 w-5" />
+                  </div>
+                  <SectionHeader title={t('links')} icon={Code2} onAdd={() => openModal('link')} onToggleVisibility={() => toggleSectionVisibility('links')} isHidden={isSectionHidden('links')} />
+                  <SortableList
+                    items={data.links || []}
+                    onReorder={(list) => onChange({ ...data, links: list })}
+                    keyExtractor={(i) => i.id}
+                    renderItem={(link) => (
+                      <ListItemCard
+                        title={link.label}
+                        subtitle={link.url}
+                        onEdit={() => openModal('link', link)}
+                        onDelete={(e) => { e.stopPropagation(); deleteItem('link', link.id); }}
+                      />
+                    )}
+                  />
+                </div>
+              );
+
             default:
               return null;
           }
@@ -412,6 +466,76 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <FormLabel>{t('gpa')}</FormLabel>
               <Input value={tempItem?.gpaOrHonors || ''} onChange={(e) => setTempItem({ ...tempItem, gpaOrHonors: e.target.value })} placeholder="GPA 6.5/7.0" />
             </div>
+            <div>
+              <FormLabel>{t('subtitles')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      value={sub}
+                      onChange={(e) => {
+                        const newSubs = [...(tempItem.subtitles || [])];
+                        newSubs[idx] = e.target.value;
+                        setTempItem({ ...tempItem, subtitles: newSubs });
+                      }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Subtítulo..."
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, subtitles: tempItem.subtitles.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, subtitles: [...(tempItem.subtitles || []), ''] })}
+                >
+                  {t('addSubtitle')}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('bulletsDescription')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <Textarea
+                      value={bullet}
+                      onChange={(e) => {
+                        const newBullets = [...(tempItem.bullets || [])];
+                        newBullets[idx] = e.target.value;
+                        setTempItem({ ...tempItem, bullets: newBullets });
+                      }}
+                      className="flex-1 min-h-[50px] text-sm"
+                      placeholder={t('describeBullet')}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 mt-1 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, bullets: tempItem.bullets.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, bullets: [...(tempItem.bullets || []), ''] })}
+                >
+                  {t('addBullet')}
+                </Button>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
@@ -454,6 +578,41 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div>
                 <FormLabel>{t('endDate')}</FormLabel>
                 <Input value={tempItem?.endDate || ''} onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.value })} placeholder="Presente" />
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('subtitles')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      value={sub}
+                      onChange={(e) => {
+                        const newSubs = [...(tempItem.subtitles || [])];
+                        newSubs[idx] = e.target.value;
+                        setTempItem({ ...tempItem, subtitles: newSubs });
+                      }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Subtítulo..."
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, subtitles: tempItem.subtitles.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, subtitles: [...(tempItem.subtitles || []), ''] })}
+                >
+                  {t('addSubtitle')}
+                </Button>
               </div>
             </div>
             <div>
@@ -526,6 +685,41 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               </div>
             </div>
             <div>
+              <FormLabel>{t('subtitles')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      value={sub}
+                      onChange={(e) => {
+                        const newSubs = [...(tempItem.subtitles || [])];
+                        newSubs[idx] = e.target.value;
+                        setTempItem({ ...tempItem, subtitles: newSubs });
+                      }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Subtítulo..."
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, subtitles: tempItem.subtitles.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, subtitles: [...(tempItem.subtitles || []), ''] })}
+                >
+                  {t('addSubtitle')}
+                </Button>
+              </div>
+            </div>
+            <div>
               <FormLabel>{t('profSummary')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {tempItem?.description?.map((desc: string, idx: number) => (
@@ -593,6 +787,41 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                 <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} />
               </div>
             </div>
+            <div>
+              <FormLabel>{t('bulletsDescription')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <Textarea
+                      value={bullet}
+                      onChange={(e) => {
+                        const newBullets = [...(tempItem.bullets || [])];
+                        newBullets[idx] = e.target.value;
+                        setTempItem({ ...tempItem, bullets: newBullets });
+                      }}
+                      className="flex-1 min-h-[50px] text-sm"
+                      placeholder={t('describeBullet')}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 mt-1 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, bullets: tempItem.bullets.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, bullets: [...(tempItem.bullets || []), ''] })}
+                >
+                  {t('addBullet')}
+                </Button>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
@@ -616,6 +845,173 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             <div>
               <FormLabel>{t('itemsList')}</FormLabel>
               <Textarea value={tempItem?.items || ''} onChange={(e) => setTempItem({ ...tempItem, items: e.target.value })} placeholder={t('itemsPlace')} />
+            </div>
+            <div>
+              <FormLabel>{t('bulletsDescription')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <Textarea
+                      value={bullet}
+                      onChange={(e) => {
+                        const newBullets = [...(tempItem.bullets || [])];
+                        newBullets[idx] = e.target.value;
+                        setTempItem({ ...tempItem, bullets: newBullets });
+                      }}
+                      className="flex-1 min-h-[50px] text-sm"
+                      placeholder={t('describeBullet')}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 mt-1 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, bullets: tempItem.bullets.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, bullets: [...(tempItem.bullets || []), ''] })}
+                >
+                  {t('addBullet')}
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
+            <Button onClick={saveModal} className="bg-black text-white hover:bg-gray-800">{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Workshop Modal */}
+      <Dialog open={editingState?.type === 'workshop'} onOpenChange={closeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('workshops')}</DialogTitle>
+            <DialogClose onClick={closeModal} />
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div>
+              <FormLabel>{t('workshopName')}</FormLabel>
+              <Input value={tempItem?.name || ''} onChange={(e) => setTempItem({ ...tempItem, name: e.target.value })} placeholder="Taller React 19" />
+            </div>
+            <div>
+              <FormLabel>{t('organizer')}</FormLabel>
+              <Input value={tempItem?.organizer || ''} onChange={(e) => setTempItem({ ...tempItem, organizer: e.target.value })} placeholder="Denoise Academy" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FormLabel>{t('date')}</FormLabel>
+                <Input value={tempItem?.date || ''} onChange={(e) => setTempItem({ ...tempItem, date: e.target.value })} placeholder="Nov 2024" />
+              </div>
+              <div>
+                <FormLabel>{t('location')}</FormLabel>
+                <Input value={tempItem?.location || ''} onChange={(e) => setTempItem({ ...tempItem, location: e.target.value })} placeholder="Remoto / Santiago, Chile" />
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('linkOptional')}</FormLabel>
+              <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} placeholder="denoise.cl/workshop" />
+            </div>
+            <div>
+              <FormLabel>{t('subtitles')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      value={sub}
+                      onChange={(e) => {
+                        const newSubs = [...(tempItem.subtitles || [])];
+                        newSubs[idx] = e.target.value;
+                        setTempItem({ ...tempItem, subtitles: newSubs });
+                      }}
+                      className="flex-1 h-8 text-sm"
+                      placeholder="Subtítulo..."
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, subtitles: tempItem.subtitles.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, subtitles: [...(tempItem.subtitles || []), ''] })}
+                >
+                  {t('addSubtitle')}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('bulletsDescription')}</FormLabel>
+              <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
+                {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
+                  <div key={idx} className="flex gap-2 items-start">
+                    <Textarea
+                      value={bullet}
+                      onChange={(e) => {
+                        const newBullets = [...(tempItem.bullets || [])];
+                        newBullets[idx] = e.target.value;
+                        setTempItem({ ...tempItem, bullets: newBullets });
+                      }}
+                      className="flex-1 min-h-[50px] text-sm"
+                      placeholder={t('describeBullet')}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-red-400 hover:text-red-600 mt-1 shrink-0"
+                      onClick={() => setTempItem({ ...tempItem, bullets: tempItem.bullets.filter((_: any, i: number) => i !== idx) })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600"
+                  onClick={() => setTempItem({ ...tempItem, bullets: [...(tempItem.bullets || []), ''] })}
+                >
+                  {t('addBullet')}
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
+            <Button onClick={saveModal} className="bg-black text-white hover:bg-gray-800">{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Modal */}
+      <Dialog open={editingState?.type === 'link'} onOpenChange={closeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('links')}</DialogTitle>
+            <DialogClose onClick={closeModal} />
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div>
+              <FormLabel>{t('linkLabel')}</FormLabel>
+              <Input value={tempItem?.label || ''} onChange={(e) => setTempItem({ ...tempItem, label: e.target.value })} placeholder="Portafolio Personal" />
+            </div>
+            <div>
+              <FormLabel>{t('linkUrl')}</FormLabel>
+              <Input value={tempItem?.url || ''} onChange={(e) => setTempItem({ ...tempItem, url: e.target.value })} placeholder="juanperez.dev" />
             </div>
           </div>
           <DialogFooter>

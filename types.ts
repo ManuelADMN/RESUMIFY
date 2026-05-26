@@ -17,12 +17,16 @@ export interface ResumeData {
   projects: ProjectItem[];
   skills: SkillItem[];
   certifications: CertificationItem[];
+  workshops?: WorkshopItem[];
+  links?: LinkItem[];
+  font?: string;
 }
 
 export interface SkillItem {
   id: string;
   category: string;
   items: string;
+  bullets?: string[];
 }
 
 export interface EducationItem {
@@ -33,6 +37,8 @@ export interface EducationItem {
   startDate: string;
   endDate: string;
   gpaOrHonors: string;
+  bullets?: string[];
+  subtitles?: string[];
 }
 
 export interface ExperienceItem {
@@ -44,6 +50,7 @@ export interface ExperienceItem {
   endDate: string;
   bullets: string[];
   link?: string;
+  subtitles?: string[];
 }
 
 export interface ProjectItem {
@@ -53,6 +60,7 @@ export interface ProjectItem {
   description: string[];
   link?: string;
   date?: string;
+  subtitles?: string[];
 }
 
 export interface CertificationItem {
@@ -61,6 +69,24 @@ export interface CertificationItem {
   issuer: string;
   date: string;
   link?: string;
+  bullets?: string[];
+}
+
+export interface WorkshopItem {
+  id: string;
+  name: string;
+  organizer: string;
+  date: string;
+  location?: string;
+  link?: string;
+  bullets?: string[];
+  subtitles?: string[];
+}
+
+export interface LinkItem {
+  id: string;
+  label: string;
+  url: string;
 }
 
 export enum SectionType {
@@ -68,5 +94,7 @@ export enum SectionType {
   EXPERIENCE = 'experience',
   PROJECTS = 'projects',
   SKILLS = 'skills',
-  CERTIFICATIONS = 'certifications'
+  CERTIFICATIONS = 'certifications',
+  WORKSHOPS = 'workshops',
+  LINKS = 'links'
 }
