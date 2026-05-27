@@ -973,6 +973,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} placeholder="denoise.cl/workshop" />
             </div>
             <div>
+              <FormLabel>{t('location')}</FormLabel>
+              <Input value={tempItem?.location || ''} onChange={(e) => setTempItem({ ...tempItem, location: e.target.value })} placeholder="Ubicación (Opcional)" />
+            </div>
+            <div>
               <FormLabel>{t('subtitles')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
