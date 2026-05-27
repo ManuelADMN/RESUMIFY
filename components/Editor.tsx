@@ -149,10 +149,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     if (!initialItem) {
       if (type === 'education') initialItem = { id: crypto.randomUUID(), institution: '', degree: '', location: '', startDate: '', endDate: '', gpaOrHonors: '', bullets: [], subtitles: [] };
       if (type === 'experience') initialItem = { id: crypto.randomUUID(), company: '', role: '', location: '', startDate: '', endDate: t('present'), bullets: [''], subtitles: [] };
-      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', date: '', subtitles: [] };
+      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', startDate: '', endDate: '', subtitles: [] };
       if (type === 'skill') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
-      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', date: '', link: '', bullets: [] };
-      if (type === 'workshop') initialItem = { id: crypto.randomUUID(), name: '', organizer: '', date: '', location: '', link: '', bullets: [], subtitles: [] };
+      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', startDate: '', endDate: '', link: '', bullets: [] };
+      if (type === 'workshop') initialItem = { id: crypto.randomUUID(), name: '', organizer: '', startDate: '', endDate: '', location: '', link: '', bullets: [], subtitles: [] };
       if (type === 'link') initialItem = { id: crypto.randomUUID(), label: '', url: '' };
     }
     setTempItem(JSON.parse(JSON.stringify(initialItem)));
@@ -335,11 +335,11 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                     keyExtractor={(i) => i.id}
                     renderItem={(cert) => (
                       <ListItemCard
-                        title={cert.name}
-                        subtitle={`${cert.issuer} • ${cert.date}`}
-                        onEdit={() => openModal('certification', cert)}
-                        onDelete={(e) => { e.stopPropagation(); deleteItem('certification', cert.id); }}
-                      />
+                          title={cert.name}
+                          subtitle={`${cert.issuer}${(cert.startDate || cert.endDate) ? ' • ' : ''}${cert.startDate || ''}${(cert.startDate && cert.endDate) ? ' - ' : ''}${cert.endDate || ''}`}
+                          onEdit={() => openModal('certification', cert)}
+                          onDelete={(e) => { e.stopPropagation(); deleteItem('certification', cert.id); }}
+                        />
                     )}
                   />
                 </div>
@@ -381,11 +381,11 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                     keyExtractor={(i) => i.id}
                     renderItem={(ws) => (
                       <ListItemCard
-                        title={ws.name}
-                        subtitle={`${ws.organizer} • ${ws.date}`}
-                        onEdit={() => openModal('workshop', ws)}
-                        onDelete={(e) => { e.stopPropagation(); deleteItem('workshop', ws.id); }}
-                      />
+                          title={ws.name}
+                          subtitle={`${ws.organizer}${(ws.startDate || ws.endDate) ? ' • ' : ''}${ws.startDate || ''}${(ws.startDate && ws.endDate) ? ' - ' : ''}${ws.endDate || ''}`}
+                          onEdit={() => openModal('workshop', ws)}
+                          onDelete={(e) => { e.stopPropagation(); deleteItem('workshop', ws.id); }}
+                        />
                     )}
                   />
                 </div>
@@ -506,6 +506,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
+                    <div className="w-4 mt-3 text-[16px] leading-none text-gray-600">•</div>
                     <Textarea
                       value={bullet}
                       onChange={(e) => {
@@ -620,6 +621,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {tempItem?.bullets?.map((bullet: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
+                    <div className="w-4 mt-3 text-[16px] leading-none text-gray-600">•</div>
                     <Textarea
                       value={bullet}
                       onChange={(e) => {
@@ -671,20 +673,6 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.name || ''} onChange={(e) => setTempItem({ ...tempItem, name: e.target.value })} />
             </div>
             <div>
-              <FormLabel>{t('techSubtitle')}</FormLabel>
-              <Input value={tempItem?.technologies || ''} onChange={(e) => setTempItem({ ...tempItem, technologies: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <FormLabel>{t('dates')}</FormLabel>
-                <Input value={tempItem?.date || ''} onChange={(e) => setTempItem({ ...tempItem, date: e.target.value })} placeholder="Ene 2023 - Presente" />
-              </div>
-              <div>
-                <FormLabel>{t('linkText')}</FormLabel>
-                <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} />
-              </div>
-            </div>
-            <div>
               <FormLabel>{t('subtitles')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
@@ -719,11 +707,40 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                 </Button>
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <FormLabel>{t('startDate')}</FormLabel>
+                <Input value={tempItem?.startDate || ''} onChange={(e) => setTempItem({ ...tempItem, startDate: e.target.value })} placeholder="Ene 2023" />
+              </div>
+              <div>
+                <FormLabel>{t('endDate')}</FormLabel>
+                <Input value={tempItem?.endDate || ''} onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.value })} placeholder="Presente" />
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="projectCurrent"
+                    checked={tempItem?.endDate === t('present')}
+                    onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.checked ? t('present') : '' })}
+                    className="rounded border-gray-300 text-black focus:ring-black"
+                  />
+                  <label htmlFor="projectCurrent" className="text-xs text-gray-600">{t('currentStudy')}</label>
+                </div>
+              </div>
+              <div>
+                <FormLabel>{t('linkText')}</FormLabel>
+                <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <FormLabel>{t('techSubtitle')}</FormLabel>
+              <Input value={tempItem?.technologies || ''} onChange={(e) => setTempItem({ ...tempItem, technologies: e.target.value })} />
+            </div>
             <div>
               <FormLabel>{t('profSummary')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {tempItem?.description?.map((desc: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
+                    <div className="w-4 mt-3 text-[16px] leading-none text-gray-600">•</div>
                     <Textarea
                       value={desc}
                       onChange={(e) => {
@@ -779,8 +796,22 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FormLabel>{t('date')}</FormLabel>
-                <Input value={tempItem?.date || ''} onChange={(e) => setTempItem({ ...tempItem, date: e.target.value })} placeholder="Ago 2023" />
+                <FormLabel>{t('startDate')}</FormLabel>
+                <Input value={tempItem?.startDate || ''} onChange={(e) => setTempItem({ ...tempItem, startDate: e.target.value })} placeholder="Ago 2023" />
+              </div>
+              <div>
+                <FormLabel>{t('endDate')}</FormLabel>
+                <Input value={tempItem?.endDate || ''} onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.value })} placeholder="Presente" />
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="certCurrent"
+                    checked={tempItem?.endDate === t('present')}
+                    onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.checked ? t('present') : '' })}
+                    className="rounded border-gray-300 text-black focus:ring-black"
+                  />
+                  <label htmlFor="certCurrent" className="text-xs text-gray-600">{t('currentStudy')}</label>
+                </div>
               </div>
               <div>
                 <FormLabel>{t('linkIdOptional')}</FormLabel>
@@ -792,6 +823,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.bullets || []).map((bullet: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start">
+                    <div className="w-4 mt-3 text-[16px] leading-none text-gray-600">•</div>
                     <Textarea
                       value={bullet}
                       onChange={(e) => {
@@ -907,12 +939,22 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FormLabel>{t('date')}</FormLabel>
-                <Input value={tempItem?.date || ''} onChange={(e) => setTempItem({ ...tempItem, date: e.target.value })} placeholder="Nov 2024" />
+                <FormLabel>{t('startDate')}</FormLabel>
+                <Input value={tempItem?.startDate || ''} onChange={(e) => setTempItem({ ...tempItem, startDate: e.target.value })} placeholder="Nov 2024" />
               </div>
               <div>
-                <FormLabel>{t('location')}</FormLabel>
-                <Input value={tempItem?.location || ''} onChange={(e) => setTempItem({ ...tempItem, location: e.target.value })} placeholder="Remoto / Santiago, Chile" />
+                <FormLabel>{t('endDate')}</FormLabel>
+                <Input value={tempItem?.endDate || ''} onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.value })} placeholder="Presente" />
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="workshopCurrent"
+                    checked={tempItem?.endDate === t('present')}
+                    onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.checked ? t('present') : '' })}
+                    className="rounded border-gray-300 text-black focus:ring-black"
+                  />
+                  <label htmlFor="workshopCurrent" className="text-xs text-gray-600">{t('currentStudy')}</label>
+                </div>
               </div>
             </div>
             <div>

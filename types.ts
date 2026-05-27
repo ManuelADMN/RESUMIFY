@@ -59,7 +59,8 @@ export interface ProjectItem {
   technologies: string;
   description: string[];
   link?: string;
-  date?: string;
+  startDate?: string;
+  endDate?: string;
   location?: string;
   subtitles?: string[];
 }
@@ -68,7 +69,8 @@ export interface CertificationItem {
   id: string;
   name: string;
   issuer: string;
-  date: string;
+  startDate?: string;
+  endDate?: string;
   link?: string;
   bullets?: string[];
 }
@@ -77,7 +79,8 @@ export interface WorkshopItem {
   id: string;
   name: string;
   organizer: string;
-  date: string;
+  startDate?: string;
+  endDate?: string;
   location?: string;
   link?: string;
   bullets?: string[];

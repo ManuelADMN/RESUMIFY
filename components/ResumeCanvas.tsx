@@ -91,6 +91,16 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     }
   };
 
+  const getSummaryItems = (summary: string) => {
+    if (!summary) return [];
+    // First try splitting by explicit newlines
+    const lines = summary.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    if (lines.length > 1) return lines;
+    // Fallback: split into sentences keeping punctuation
+    const sentences = summary.match(/[^.!?]+[.!?]?/g)?.map(s => s.trim()).filter(Boolean) || [];
+    return sentences.length > 0 ? sentences : [summary.trim()];
+  };
+
   return (
     <div 
       id="resume-canvas"
@@ -168,9 +178,26 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
           <h2 className="text-[16px] font-bold uppercase tracking-wide mb-2 text-black">
             {t('summary')}
           </h2>
-          <p className="text-justify text-black whitespace-pre-wrap">
-              {data.personalInfo.summary}
-          </p>
+          {(() => {
+            const items = getSummaryItems(data.personalInfo.summary || '');
+            if (items.length <= 1) {
+              return (
+                <p className="text-justify text-black whitespace-pre-wrap">
+                  {data.personalInfo.summary}
+                </p>
+              );
+            }
+
+            return (
+              <ul className="list-disc pl-4 space-y-1">
+                {items.map((it, idx) => (
+                  <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                    {it}
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
       </section>
 
       {(data.sectionOrder || ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links']).map(sectionId => {
@@ -205,13 +232,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           </div>
                         )}
                         {edu.bullets && edu.bullets.length > 0 && (
-                          <div className="mt-1.5 space-y-1 pl-0">
+                          <ul className="mt-1.5 list-disc pl-5 space-y-1">
                             {edu.bullets.map((bullet, idx) => (
-                              <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
-                              </p>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         )}
                       </div>
                     );
@@ -237,10 +264,24 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         <SplitRow 
                             left={
                                 <span className="font-bold text-[11pt]">
-                                    {exp.company} 
+                                    {exp.company}
                                     {exp.link && (
-                                        <span className="font-normal underline decoration-1 underline-offset-2 ml-1">
-                                            | {exp.link}
+                                        <span className="font-normal ml-1">
+                                            |{' '}
+                                            {isUrl(exp.link) ? (
+                                              <a
+                                                href={formatUrl(exp.link)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="underline decoration-1 underline-offset-2 hover:text-blue-600"
+                                              >
+                                                {lang === 'es' ? 'Sitio Web' : 'Website'}
+                                              </a>
+                                            ) : (
+                                              <span className="underline decoration-1 underline-offset-2">
+                                                {exp.link}
+                                              </span>
+                                            )}
                                         </span>
                                     )}
                                 </span>
@@ -258,13 +299,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           </div>
                         )}
                         {exp.bullets && exp.bullets.length > 0 && (
-                          <div className="mt-1.5 space-y-1 pl-0">
+                          <ul className="mt-1.5 list-disc pl-5 space-y-1">
                             {exp.bullets.map((bullet, idx) => (
-                              <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
-                              </p>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         )}
                       </div>
                     );
@@ -281,8 +322,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <div className="space-y-3">
                   {data.projects.map((proj) => {
                     const projSubtitles = [
-                      ...[proj.technologies].filter(Boolean),
                       ...(proj.subtitles && proj.subtitles.length > 0 ? proj.subtitles : []),
+                      ...[proj.technologies].filter(Boolean),
                       ...(proj.location ? [proj.location] : []),
                     ];
                     return (
@@ -290,15 +331,29 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                          <SplitRow 
                             left={
                                 <span className="font-bold text-[11pt]">
-                                    {proj.name} 
+                                    {proj.name}
                                     {proj.link && (
-                                        <span className="font-normal underline decoration-1 underline-offset-2 ml-1">
-                                            | {proj.link}
+                                        <span className="font-normal ml-1">
+                                            |{' '}
+                                            {isUrl(proj.link) ? (
+                                              <a
+                                                href={formatUrl(proj.link)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="underline decoration-1 underline-offset-2 hover:text-blue-600"
+                                              >
+                                                {lang === 'es' ? 'Sitio Web' : 'Website'}
+                                              </a>
+                                            ) : (
+                                              <span className="underline decoration-1 underline-offset-2">
+                                                {proj.link}
+                                              </span>
+                                            )}
                                         </span>
                                     )}
                                 </span>
                             } 
-                            right={<DateSpan>{proj.date}</DateSpan>} 
+                            right={<DateSpan>{proj.startDate} - {proj.endDate}</DateSpan>} 
                         />
                         {projSubtitles.length > 0 && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
@@ -311,13 +366,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           </div>
                         )}
                         {proj.description && proj.description.length > 0 && (
-                          <div className="mt-1 space-y-1.5 pl-0">
+                          <ul className="mt-1 list-disc pl-5 space-y-1.5">
                             {proj.description.map((desc, idx) => (
-                              <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                 {desc}
-                              </p>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         )}
                       </div>
                     );
@@ -340,7 +395,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                  {cert.name}
                               </span>
                           }
-                          right={<DateSpan>{cert.date}</DateSpan>}
+                          right={<DateSpan>{cert.startDate} - {cert.endDate}</DateSpan>}
                         />
                         {(cert.issuer || cert.link) && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
@@ -363,13 +418,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           </div>
                         )}
                         {cert.bullets && cert.bullets.length > 0 && (
-                          <div className="mt-1.5 space-y-1.5 pl-0">
+                          <ul className="mt-1.5 list-disc pl-5 space-y-1.5">
                             {cert.bullets.map((bullet, idx) => (
-                              <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
-                              </p>
+                              </li>
                             ))}
-                          </div>
+                          </ul>
                         )}
                      </div>
                    ))}
@@ -386,13 +441,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           <h3 className="font-bold text-[11pt] border-b border-black inline-block mb-1" style={{ borderBottomWidth: '0.5px' }}>{skill.category}</h3>
                           <div>{skill.items}</div>
                           {skill.bullets && skill.bullets.length > 0 && (
-                            <div className="mt-1.5 space-y-1 pl-0">
+                            <ul className="mt-1.5 list-disc pl-5 space-y-1">
                               {skill.bullets.map((bullet, idx) => (
-                                <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                                <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                   {bullet}
-                                </p>
+                                </li>
                               ))}
-                            </div>
+                            </ul>
                           )}
                       </div>
                   ))}
@@ -420,7 +475,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                    {ws.name}
                                 </span>
                             }
-                            right={<DateSpan>{ws.date}</DateSpan>}
+                            right={<DateSpan>{ws.startDate} - {ws.endDate}</DateSpan>}
                           />
                           {wsSubtitles.length > 0 && (
                             <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
@@ -446,13 +501,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                             </div>
                           )}
                           {ws.bullets && ws.bullets.length > 0 && (
-                            <div className="mt-1 space-y-1.5 pl-0">
+                            <ul className="mt-1 list-disc pl-5 space-y-1.5">
                               {ws.bullets.map((bullet, idx) => (
-                                <p key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                                <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
                                   {bullet}
-                                </p>
+                                </li>
                               ))}
-                            </div>
+                            </ul>
                           )}
                        </div>
                      );

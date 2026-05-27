@@ -79,7 +79,7 @@ const translations: Translations = {
 
     // Projects
     projectName: 'Nombre del Proyecto',
-    techSubtitle: 'Tecnologías / Subtítulo',
+    techSubtitle: 'Tecnologías',
     dates: 'Fechas',
     linkText: 'Enlace',
     addDetail: '+ Añadir Detalle',
@@ -107,7 +107,7 @@ const translations: Translations = {
     linkLabel: 'Título del Enlace',
     linkUrl: 'URL del Enlace',
     addLink: '+ Añadir Enlace',
-    subtitles: 'Subtítulos (Opcional)',
+    subtitles: 'Empresa/organización (Opcional)',
     addSubtitle: '+ Añadir Subtítulo',
 
     // Other
@@ -187,7 +187,7 @@ const translations: Translations = {
 
     // Projects
     projectName: 'Project Name',
-    techSubtitle: 'Technologies / Subtitle',
+    techSubtitle: 'Technologies',
     dates: 'Dates',
     linkText: 'Link',
     addDetail: '+ Add Detail',
@@ -215,7 +215,7 @@ const translations: Translations = {
     linkLabel: 'Link Title',
     linkUrl: 'Link URL',
     addLink: '+ Add Link',
-    subtitles: 'Subtitles (Optional)',
+    subtitles: 'Company/Organization (Optional)',
     addSubtitle: '+ Add Subtitle',
 
     // Other
