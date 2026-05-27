@@ -69,8 +69,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     return { href: value, label: value };
   };
 
-  const DateSpan: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span className="text-[#666666] text-[9pt]">{children}</span>
+  const DateSpan: React.FC<{ start?: string; end?: string }> = ({ start = '', end = '' }) => (
+    <span className="text-[#666666] text-[9pt]">{start}{end ? ` - ${end}` : ''}</span>
   );
 
   const getFontFamily = (fontName: string) => {
@@ -218,8 +218,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                     return (
                       <div key={edu.id} className="break-inside-avoid">
                         <SplitRow 
-                            left={<span className="font-bold text-[11pt]">{edu.institution}</span>} 
-                            right={<DateSpan>{edu.startDate} - {edu.endDate}</DateSpan>} 
+                          left={<span className="font-bold text-[11pt]">{edu.institution}</span>} 
+                          right={<DateSpan start={edu.startDate} end={edu.endDate} />} 
                         />
                         {eduSubtitles.length > 0 && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 flex flex-wrap items-center">
@@ -286,7 +286,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                     )}
                                 </span>
                             } 
-                            right={<DateSpan>{exp.startDate} - {exp.endDate}</DateSpan>} 
+                            right={<DateSpan start={exp.startDate} end={exp.endDate} />} 
                         />
                         {expSubtitles.length > 0 && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 flex flex-wrap items-center">
@@ -353,7 +353,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                     )}
                                 </span>
                             } 
-                            right={<DateSpan>{proj.startDate} - {proj.endDate}</DateSpan>} 
+                            right={<DateSpan start={proj.startDate} end={proj.endDate} />} 
                         />
                         {projSubtitles.length > 0 && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
@@ -395,7 +395,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                  {cert.name}
                               </span>
                           }
-                          right={<DateSpan>{cert.startDate} - {cert.endDate}</DateSpan>}
+                          right={<DateSpan start={cert.startDate} end={cert.endDate} />}
                         />
                         {(cert.issuer || cert.link) && (
                           <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
@@ -475,7 +475,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                                    {ws.name}
                                 </span>
                             }
-                            right={<DateSpan>{ws.startDate} - {ws.endDate}</DateSpan>}
+                            right={<DateSpan start={ws.startDate} end={ws.endDate} />}
                           />
                           {wsSubtitles.length > 0 && (
                             <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
