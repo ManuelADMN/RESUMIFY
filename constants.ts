@@ -2,7 +2,7 @@
 import { ResumeData } from './types';
 
 export const INITIAL_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'],
+  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "Juan Pérez",
@@ -122,7 +122,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
       name: "Taller de React 19 y Next.js",
       organizer: "Denoise Academy",
       date: "Nov 2024",
-      location: "Remoto",
+      location: "",
       link: "denoise.cl/workshops",
       bullets: [
         "Aprendí patrones avanzados de React como Server Actions y Server Components.",
@@ -146,7 +146,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
 };
 
 export const EMPTY_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'],
+  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "",

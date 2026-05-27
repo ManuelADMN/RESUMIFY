@@ -200,7 +200,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
           })()}
       </section>
 
-      {(data.sectionOrder || ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links']).map(sectionId => {
+      {(data.sectionOrder || ['education', 'experience', 'projects', 'certifications', 'skills', 'links']).map(sectionId => {
         if ((data.hiddenSections || []).includes(sectionId)) return null;
         switch (sectionId) {
           case 'education':

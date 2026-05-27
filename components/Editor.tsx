@@ -204,7 +204,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     onChange(newData);
   };
 
-  const DEFAULT_SECTION_ORDER = ['education', 'experience', 'projects', 'certifications', 'skills', 'workshops', 'links'];
+  const DEFAULT_SECTION_ORDER = ['education', 'experience', 'projects', 'certifications', 'skills', 'links'];
+  
+  // Remove 'workshops' from default ordering as this section is not shown by default
+  // (kept workshop modal/code for optional use)
 
   return (
     <div className="h-full bg-white p-6 space-y-6 pb-20">
