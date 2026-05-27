@@ -60,6 +60,7 @@ const translations: Translations = {
 
     // Education
     institution: 'Universidad / Escuela',
+    companyOrg: 'Empresa / Organización',
     degree: 'Título / Grado',
     startDate: 'Fecha Inicio',
     endDate: 'Fecha Fin',
@@ -107,7 +108,7 @@ const translations: Translations = {
     linkLabel: 'Título del Enlace',
     linkUrl: 'URL del Enlace',
     addLink: '+ Añadir Enlace',
-    subtitles: 'Empresa/organización (Opcional)',
+    subtitles: 'Subtítulo',
     addSubtitle: '+ Añadir Subtítulo',
 
     // Other
@@ -168,6 +169,7 @@ const translations: Translations = {
 
     // Education
     institution: 'University / School',
+    companyOrg: 'Company / Organization',
     degree: 'Degree / Major',
     startDate: 'Start Date',
     endDate: 'End Date',
@@ -215,7 +217,7 @@ const translations: Translations = {
     linkLabel: 'Link Title',
     linkUrl: 'Link URL',
     addLink: '+ Add Link',
-    subtitles: 'Company/Organization (Optional)',
+    subtitles: 'Subtitle',
     addSubtitle: '+ Add Subtitle',
 
     // Other

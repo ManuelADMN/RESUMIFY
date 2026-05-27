@@ -432,7 +432,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
           </DialogHeader>
           <div className="p-6 space-y-4">
             <div>
-              <FormLabel>{t('institution')}</FormLabel>
+              <FormLabel>{t('companyOrg')}</FormLabel>
               <Input value={tempItem?.institution || ''} onChange={(e) => setTempItem({ ...tempItem, institution: e.target.value })} placeholder="Universidad de Chile" />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -470,7 +470,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.gpaOrHonors || ''} onChange={(e) => setTempItem({ ...tempItem, gpaOrHonors: e.target.value })} placeholder="GPA 6.5/7.0" />
             </div>
             <div>
-              <FormLabel>{t('subtitles')}</FormLabel>
+              <FormLabel>{t('companyOrg')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -558,7 +558,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
           <div className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FormLabel>{t('company')}</FormLabel>
+                  <FormLabel>{t('companyOrg')}</FormLabel>
                 <Input value={tempItem?.company || ''} onChange={(e) => setTempItem({ ...tempItem, company: e.target.value })} placeholder="Acme Corp" />
               </div>
               <div>
@@ -937,7 +937,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.name || ''} onChange={(e) => setTempItem({ ...tempItem, name: e.target.value })} placeholder="Taller React 19" />
             </div>
             <div>
-              <FormLabel>{t('organizer')}</FormLabel>
+              <FormLabel>{t('companyOrg')}</FormLabel>
               <Input value={tempItem?.organizer || ''} onChange={(e) => setTempItem({ ...tempItem, organizer: e.target.value })} placeholder="Denoise Academy" />
             </div>
             <div className="grid grid-cols-2 gap-4">
