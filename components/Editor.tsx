@@ -585,7 +585,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               </div>
             </div>
             <div>
-              <FormLabel>{t('subtitles')}</FormLabel>
+              <FormLabel>{t('companyOrg')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -597,7 +597,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                         setTempItem({ ...tempItem, subtitles: newSubs });
                       }}
                       className="flex-1 h-8 text-sm"
-                      placeholder="Subtítulo..."
+                      placeholder={t('companyOrg')}
                     />
                     <Button
                       variant="ghost"
