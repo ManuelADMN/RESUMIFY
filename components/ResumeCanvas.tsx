@@ -91,16 +91,6 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     }
   };
 
-  const getSummaryItems = (summary: string) => {
-    if (!summary) return [];
-    // First try splitting by explicit newlines
-    const lines = summary.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    if (lines.length > 1) return lines;
-    // Fallback: split into sentences keeping punctuation
-    const sentences = summary.match(/[^.!?]+[.!?]?/g)?.map(s => s.trim()).filter(Boolean) || [];
-    return sentences.length > 0 ? sentences : [summary.trim()];
-  };
-
   return (
     <div 
       id="resume-canvas"
@@ -178,26 +168,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
           <h2 className="text-[16px] font-bold uppercase tracking-wide mb-2 text-black">
             {t('summary')}
           </h2>
-          {(() => {
-            const items = getSummaryItems(data.personalInfo.summary || '');
-            if (items.length <= 1) {
-              return (
-                <p className="text-justify text-black whitespace-pre-wrap">
-                  {data.personalInfo.summary}
-                </p>
-              );
-            }
-
-            return (
-              <ul className="list-disc pl-4 space-y-1">
-                {items.map((it, idx) => (
-                  <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
-                    {it}
-                  </li>
-                ))}
-              </ul>
-            );
-          })()}
+          <p className="text-justify text-black whitespace-pre-wrap">
+            {data.personalInfo.summary}
+          </p>
       </section>
 
       {(data.sectionOrder || ['education', 'experience', 'projects', 'certifications', 'skills', 'links']).map(sectionId => {
@@ -464,7 +437,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                      const wsSubtitles = [
                        ...[ws.organizer].filter(Boolean),
                        ...(ws.subtitles && ws.subtitles.length > 0 ? ws.subtitles : []),
-                       ...(ws.location ? [ws.location] : []),
+                       // hide 'Remoto' / 'Remote' from display
+                       ...(ws.location && !/^\s*(remoto|remote)\s*$/i.test(ws.location) ? [ws.location] : []),
                        ...(ws.link ? [ws.link] : []),
                      ];
                      return (
