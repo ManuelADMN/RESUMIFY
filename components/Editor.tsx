@@ -149,9 +149,9 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     if (!initialItem) {
       if (type === 'education') initialItem = { id: crypto.randomUUID(), institution: '', degree: '', location: '', startDate: '', endDate: '', gpaOrHonors: '', bullets: [], subtitles: [] };
       if (type === 'experience') initialItem = { id: crypto.randomUUID(), company: '', role: '', location: '', startDate: '', endDate: t('present'), bullets: [''], subtitles: [] };
-      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', startDate: '', endDate: '', subtitles: [] };
+      if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', startDate: '', endDate: '', location: '', subtitles: [] };
       if (type === 'skill') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
-      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', startDate: '', endDate: '', link: '', bullets: [] };
+      if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', startDate: '', endDate: '', link: '', location: '', bullets: [] };
       if (type === 'workshop') initialItem = { id: crypto.randomUUID(), name: '', organizer: '', startDate: '', endDate: '', location: '', link: '', bullets: [], subtitles: [] };
       if (type === 'link') initialItem = { id: crypto.randomUUID(), label: '', url: '' };
     }
@@ -739,6 +739,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.technologies || ''} onChange={(e) => setTempItem({ ...tempItem, technologies: e.target.value })} />
             </div>
             <div>
+              <FormLabel>{t('location')}</FormLabel>
+              <Input value={tempItem?.location || ''} onChange={(e) => setTempItem({ ...tempItem, location: e.target.value })} placeholder="Ubicación (Opcional)" />
+            </div>
+            <div>
               <FormLabel>{t('profSummary')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {tempItem?.description?.map((desc: string, idx: number) => (
@@ -819,6 +823,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div>
                 <FormLabel>{t('linkIdOptional')}</FormLabel>
                 <Input value={tempItem?.link || ''} onChange={(e) => setTempItem({ ...tempItem, link: e.target.value })} />
+              </div>
+              <div>
+                <FormLabel>{t('location')}</FormLabel>
+                <Input value={tempItem?.location || ''} onChange={(e) => setTempItem({ ...tempItem, location: e.target.value })} placeholder="Ubicación (Opcional)" />
               </div>
             </div>
             <div>
