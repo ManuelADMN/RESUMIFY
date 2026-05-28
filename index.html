@@ -57,10 +57,14 @@
           padding: 0 !important;
         }
 
-        div {
-          display: block !important;
-          position: static !important;
+        /* Fix container wrappers: prevent overflow clipping and ensure canvas
+           is positioned relative to the page, not a nested element. */
+        .app-container,
+        .preview-panel,
+        .scroll-area {
           overflow: visible !important;
+          position: static !important;
+          height: auto !important;
         }
 
         .no-print, .sidebar-panel, .toolbar-panel {
@@ -70,6 +74,12 @@
         body * { visibility: hidden; }
 
         #resume-canvas, #resume-canvas * { visibility: visible; }
+
+        /* Ensure links always print */
+        #resume-canvas a {
+          color: black !important;
+          text-decoration: none !important;
+        }
 
         #resume-canvas, section, article, header, footer, li, p {
           page-break-inside: avoid !important;

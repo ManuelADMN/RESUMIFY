@@ -108,30 +108,30 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
         <h1 className="font-bold mb-3 text-black" style={{ fontSize: '22pt', lineHeight: 1.05 }}>
           {data.personalInfo.fullName}
         </h1>
-        <div className="text-[9pt] flex flex-wrap justify-center gap-x-1 text-black items-center">
+        <div className="text-[9pt] flex flex-nowrap justify-center gap-x-1 text-black items-center" style={{ whiteSpace: 'nowrap' }}>
             {data.personalInfo.email && (
                 <>
-                <a href={`mailto:${data.personalInfo.email}`} className="hover:underline">{data.personalInfo.email}</a>
+                <a href={`mailto:${data.personalInfo.email}`} className="hover:underline" style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.email}</a>
                 </>
             )}
             {data.personalInfo.phone && (
                 <>
-                <span className="mx-1">|</span>
-                <span>{data.personalInfo.phone}</span>
+                <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
+                <span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.phone}</span>
                 </>
             )}
             {data.personalInfo.location && (
                 <>
-                <span className="mx-1">|</span>
-                <span>{data.personalInfo.location}</span>
+                <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
+                <span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.location}</span>
                 </>
             )}
             {data.personalInfo.linkedin && (() => {
                 const linkInfo = formatContactLink('linkedin', data.personalInfo.linkedin);
                 return (
                   <>
-                  <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a>
+                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>LinkedIn</a>
                   </>
                 );
             })()}
@@ -139,8 +139,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 const linkInfo = formatContactLink('github', data.personalInfo.github);
                 return (
                   <>
-                  <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>
+                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>GitHub</a>
                   </>
                 );
             })()}
@@ -148,8 +148,8 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 const linkInfo = formatContactLink('website', data.personalInfo.website);
                 return (
                   <>
-                  <span className="mx-1">|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline">
+                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
+                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>
                     {lang === 'es' ? 'Sitio Web' : 'Website'}
                   </a>
                   </>
