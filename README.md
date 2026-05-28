@@ -143,7 +143,7 @@ Resumify uses a simple JSON structure. You can import/export this directly:
 | [TypeScript](https://www.typescriptlang.org) | 5.8 | Type safety |
 | [Tailwind CSS](https://tailwindcss.com) | CDN | Styling |
 | [Lucide React](https://lucide.dev) | 0.556 | Icons |
-| [html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) | 0.10 | PDF generation |
+| Native browser print | Built-in | ATS-friendly PDF export using selectable real text |
 
 ---
 

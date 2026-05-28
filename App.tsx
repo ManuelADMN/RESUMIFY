@@ -152,39 +152,20 @@ const App: React.FC = () => {
 
 
   const handleDownloadPDF = () => {
-    const element = document.getElementById('resume-canvas');
-    if (!element || isGeneratingPdf) return;
+    if (isGeneratingPdf) return;
 
     setIsGeneratingPdf(true);
 
-    const opt = {
-      margin: [10, 0, 10, 0],
-      filename: `${resumeData.personalInfo.fullName.replace(/\s+/g, '_')}_CV.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    // @ts-ignore
-    if (window.html2pdf) {
-      // @ts-ignore
-      window.html2pdf().set(opt).from(element).output('blob').then((pdfBlob) => {
-        const encodedData = `\n%RESUMIFY_DATA:${btoa(encodeURIComponent(JSON.stringify(resumeData)))}%\n`;
-        const combinedBlob = new Blob([pdfBlob, encodedData], { type: 'application/pdf' });
-        
-        const url = URL.createObjectURL(combinedBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = opt.filename;
-        a.click();
-        URL.revokeObjectURL(url);
+    try {
+      if (typeof window.print === 'function') {
+        window.print();
+        window.setTimeout(() => setIsGeneratingPdf(false), 1200);
+      } else {
+        alert(t('pdfError'));
         setIsGeneratingPdf(false);
-      }).catch((err: any) => {
-        console.error("PDF generation failed", err);
-        setIsGeneratingPdf(false);
-      });
-    } else {
+      }
+    } catch (error) {
+      console.error('PDF export failed', error);
       alert(t('pdfError'));
       setIsGeneratingPdf(false);
     }
@@ -411,21 +392,14 @@ const App: React.FC = () => {
                 </div>
 
                 <select
-                  value={resumeData.font || 'Merriweather'}
+                  value={resumeData.font || 'Arial'}
                   onChange={(e) => setResumeData({ ...resumeData, font: e.target.value })}
                   className="bg-[#1e293b] border border-gray-700 text-gray-300 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:text-white font-medium cursor-pointer"
                 >
-                  <option value="Merriweather">Merriweather ({lang === 'es' ? 'Elegante' : 'Elegant'})</option>
-                  <option value="EB Garamond">EB Garamond ({lang === 'es' ? 'Clásica' : 'Classic'})</option>
-                  <option value="Lora">Lora ({lang === 'es' ? 'Contemporánea' : 'Contemporary'})</option>
-                  <option value="Outfit">Outfit ({lang === 'es' ? 'Minimalista' : 'Minimalist'})</option>
-                  <option value="Inter">Inter ({lang === 'es' ? 'Limpia' : 'Clean'})</option>
-                  <option value="Playfair Display">Playfair ({lang === 'es' ? 'Contraste' : 'High-contrast'})</option>
-                  <option value="JetBrains Mono">JetBrains Mono ({lang === 'es' ? 'Tecnológica' : 'Tech'})</option>
-                  <option value="Arial">Arial ({lang === 'es' ? 'Sencilla' : 'Simple'})</option>
-                  <option value="Calibri">Calibri ({lang === 'es' ? 'Limpia' : 'Clean'})</option>
-                  <option value="Georgia">Georgia ({lang === 'es' ? 'Elegante Serif' : 'Elegant Serif'})</option>
-                  <option value="Times New Roman">Times New Roman ({lang === 'es' ? 'Académica' : 'Academic'})</option>
+                  <option value="Arial">Arial ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
+                  <option value="Calibri">Calibri ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
+                  <option value="Helvetica">Helvetica ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
+                  <option value="Times New Roman">Times New Roman ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
                 </select>
 
                 <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-gray-300 hover:bg-white/10 hover:text-white" title="Change Language">

@@ -15,8 +15,8 @@ const SplitRow: React.FC<{ left: React.ReactNode; right: React.ReactNode; classN
 );
 
 const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
-  <div className="w-full mb-3 mt-8 break-after-avoid">
-    <h2 className="text-[16px] font-bold uppercase tracking-wide border-b border-black pb-1 mb-2 text-black" style={{ borderBottomWidth: '0.5px' }}>
+  <div className="w-full mb-2 mt-5 break-after-avoid print:mt-4">
+    <h2 className="text-[13pt] font-bold uppercase border-b border-black pb-1 mb-1 text-black" style={{ borderBottomWidth: '0.5px' }}>
       {title}
     </h2>
   </div>
@@ -75,39 +75,37 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
 
   const getFontFamily = (fontName: string) => {
     switch (fontName) {
-      case 'EB Garamond': return "'EB Garamond', serif";
-      case 'Lora': return "'Lora', serif";
-      case 'Outfit': return "'Outfit', sans-serif";
-      case 'Inter': return "'Inter', sans-serif";
-      case 'Playfair Display': return "'Playfair Display', serif";
-      case 'JetBrains Mono': return "'JetBrains Mono', monospace";
-      case 'Arial': return "Arial, Helvetica, sans-serif";
-      case 'Calibri': return 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
-      case 'Georgia': return "Georgia, serif";
-      case 'Times New Roman': return '"Times New Roman", Times, serif';
-      case 'Merriweather':
+      case 'Arial':
+        return 'Arial, Helvetica, sans-serif';
+      case 'Calibri':
+        return 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
+      case 'Helvetica':
+        return 'Helvetica, Arial, sans-serif';
+      case 'Times New Roman':
+        return '"Times New Roman", Times, serif';
       default:
-        return "'Merriweather', serif";
+        return 'Arial, Helvetica, sans-serif';
     }
   };
 
   return (
     <div 
       id="resume-canvas"
-      className="resume-page bg-white mx-auto text-black leading-snug print:w-full print:h-full print:absolute print:top-0 print:left-0"
+      className="resume-page bg-white mx-auto text-black print:w-full print:h-full print:absolute print:top-0 print:left-0"
       style={{
         width: '210mm',
         minHeight: '297mm',
-        padding: '12mm 12mm', 
+        padding: '12mm 12mm',
         boxSizing: 'border-box',
-        fontSize: '10.5pt',
+        fontSize: '10pt',
+        lineHeight: 1.08,
         backgroundColor: 'white',
-        fontFamily: getFontFamily(data.font || 'Merriweather')
+        fontFamily: getFontFamily(data.font || 'Arial')
       }}
     >
       {/* Header */}
       <header className="text-center mb-2">
-        <h1 className="text-4xl font-bold mb-3 text-black tracking-tight">
+        <h1 className="font-bold mb-3 text-black" style={{ fontSize: '22pt', lineHeight: 1.05 }}>
           {data.personalInfo.fullName}
         </h1>
         <div className="text-[9pt] flex flex-wrap justify-center gap-x-1 text-black items-center">
@@ -165,10 +163,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
 
       {/* Summary (Resumen) */}
       <section>
-          <h2 className="text-[16px] font-bold uppercase tracking-wide mb-2 text-black">
+          <h2 className="text-[13pt] font-bold uppercase mb-1 text-black">
             {t('summary')}
           </h2>
-          <p className="text-justify text-black whitespace-pre-wrap">
+          <p className="text-black whitespace-pre-wrap">
             {data.personalInfo.summary}
           </p>
       </section>
@@ -189,7 +187,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                       ...(edu.location ? [edu.location] : []),
                     ];
                     return (
-                      <div key={edu.id} className="break-inside-avoid">
+                      <div key={edu.id} className="break-inside-avoid page-break-inside-avoid">
                         <SplitRow 
                           left={<span className="font-bold text-[11pt]">{edu.institution}</span>} 
                           right={<DateSpan start={edu.startDate} end={edu.endDate} />} 
@@ -207,7 +205,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         {edu.bullets && edu.bullets.length > 0 && (
                           <ul className="mt-1.5 list-disc pl-5 space-y-1">
                             {edu.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
                               </li>
                             ))}
@@ -233,7 +231,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                       ...(exp.location ? [exp.location] : []),
                     ];
                     return (
-                      <div key={exp.id} className="break-inside-avoid">
+                      <div key={exp.id} className="break-inside-avoid page-break-inside-avoid">
                         <SplitRow 
                             left={
                                 <span className="font-bold text-[11pt]">
@@ -274,7 +272,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         {exp.bullets && exp.bullets.length > 0 && (
                           <ul className="mt-1.5 list-disc pl-5 space-y-1">
                             {exp.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
                               </li>
                             ))}
@@ -300,7 +298,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                       ...(proj.location ? [proj.location] : []),
                     ];
                     return (
-                      <div key={proj.id} className="break-inside-avoid">
+                      <div key={proj.id} className="break-inside-avoid page-break-inside-avoid">
                          <SplitRow 
                             left={
                                 <span className="font-bold text-[11pt]">
@@ -341,7 +339,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         {proj.description && proj.description.length > 0 && (
                           <ul className="mt-1 list-disc pl-5 space-y-1.5">
                             {proj.description.map((desc, idx) => (
-                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                 {desc}
                               </li>
                             ))}
@@ -361,7 +359,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('certifications')} />
                 <div className="space-y-3">
                    {data.certifications.map((cert) => (
-                     <div key={cert.id} className="break-inside-avoid">
+                     <div key={cert.id} className="break-inside-avoid page-break-inside-avoid">
                         <SplitRow 
                           left={
                               <span className="font-bold text-[11pt]">
@@ -393,7 +391,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         {cert.bullets && cert.bullets.length > 0 && (
                           <ul className="mt-1.5 list-disc pl-5 space-y-1.5">
                             {cert.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                 {bullet}
                               </li>
                             ))}
@@ -410,13 +408,13 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
             return (
               <section key={sectionId}>
                   {data.skills.map((skill) => (
-                      <div key={skill.id} className="mt-4 break-inside-avoid">
+                      <div key={skill.id} className="mt-3 break-inside-avoid page-break-inside-avoid">
                           <h3 className="font-bold text-[11pt] border-b border-black inline-block mb-1" style={{ borderBottomWidth: '0.5px' }}>{skill.category}</h3>
                           <div>{skill.items}</div>
                           {skill.bullets && skill.bullets.length > 0 && (
                             <ul className="mt-1.5 list-disc pl-5 space-y-1">
                               {skill.bullets.map((bullet, idx) => (
-                                <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                                <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                   {bullet}
                                 </li>
                               ))}
@@ -442,7 +440,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                        ...(ws.link ? [ws.link] : []),
                      ];
                      return (
-                       <div key={ws.id} className="break-inside-avoid">
+                       <div key={ws.id} className="break-inside-avoid page-break-inside-avoid">
                           <SplitRow 
                             left={
                                 <span className="font-bold text-[11pt]">
@@ -477,7 +475,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                           {ws.bullets && ws.bullets.length > 0 && (
                             <ul className="mt-1 list-disc pl-5 space-y-1.5">
                               {ws.bullets.map((bullet, idx) => (
-                                <li key={idx} className="text-justify text-[9.5pt] text-black leading-relaxed">
+                                <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
                                   {bullet}
                                 </li>
                               ))}
@@ -497,7 +495,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                 <SectionHeader title={t('links')} />
                 <div className="space-y-2">
                    {data.links.map((link) => (
-                     <div key={link.id} className="break-inside-avoid">
+                     <div key={link.id} className="break-inside-avoid page-break-inside-avoid">
                         <span className="font-bold text-[11pt]">{link.label}</span>
                         {link.url && (
                           <div className="text-sm">
@@ -505,7 +503,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                               href={formatUrl(link.url)} 
                               target="_blank" 
                               rel="noreferrer" 
-                              className="underline decoration-1 underline-offset-2 hover:text-blue-600 break-all"
+                              className="underline decoration-1 underline-offset-2 hover:text-blue-600"
                             >
                               {link.url}
                             </a>

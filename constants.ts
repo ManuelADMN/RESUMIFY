@@ -142,7 +142,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
       url: "linkedin.com/in/juanperez"
     }
   ],
-  font: "Merriweather"
+  font: "Arial"
 };
 
 export const EMPTY_RESUME_DATA: ResumeData = {
@@ -165,5 +165,5 @@ export const EMPTY_RESUME_DATA: ResumeData = {
   certifications: [],
   workshops: [],
   links: [],
-  font: "Merriweather"
+  font: "Arial"
 };
