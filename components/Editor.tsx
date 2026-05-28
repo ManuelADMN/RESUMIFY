@@ -259,7 +259,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'education':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('education')} icon={GraduationCap} onAdd={() => openModal('education')} onToggleVisibility={() => toggleSectionVisibility('education')} isHidden={isSectionHidden('education')} />
@@ -282,7 +282,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'experience':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('experience')} icon={Briefcase} onAdd={() => openModal('experience')} onToggleVisibility={() => toggleSectionVisibility('experience')} isHidden={isSectionHidden('experience')} />
@@ -305,7 +305,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'projects':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('projects')} icon={Code2} onAdd={() => openModal('project')} onToggleVisibility={() => toggleSectionVisibility('projects')} isHidden={isSectionHidden('projects')} />
@@ -328,7 +328,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'certifications':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('certifications')} icon={Award} onAdd={() => openModal('certification')} onToggleVisibility={() => toggleSectionVisibility('certifications')} isHidden={isSectionHidden('certifications')} />
@@ -351,7 +351,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'skills':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('skills')} icon={Wrench} onAdd={() => openModal('skill')} onToggleVisibility={() => toggleSectionVisibility('skills')} isHidden={isSectionHidden('skills')} />
@@ -374,7 +374,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'workshops':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('workshops')} icon={Award} onAdd={() => openModal('workshop')} onToggleVisibility={() => toggleSectionVisibility('workshops')} isHidden={isSectionHidden('workshops')} />
@@ -397,7 +397,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             case 'links':
               return (
                 <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
-                  <div className="flex justify-center opacity-0 group-hover/section:opacity-100 transition-opacity -mb-4 cursor-move text-gray-400">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
                     <GripVertical className="h-5 w-5" />
                   </div>
                   <SectionHeader title={t('links')} icon={Code2} onAdd={() => openModal('link')} onToggleVisibility={() => toggleSectionVisibility('links')} isHidden={isSectionHidden('links')} />
@@ -470,7 +470,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <Input value={tempItem?.gpaOrHonors || ''} onChange={(e) => setTempItem({ ...tempItem, gpaOrHonors: e.target.value })} placeholder="GPA 6.5/7.0" />
             </div>
             <div>
-              <FormLabel>{t('companyOrg')}</FormLabel>
+              <FormLabel>{t('subtitles')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -582,10 +582,20 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
               <div>
                 <FormLabel>{t('endDate')}</FormLabel>
                 <Input value={tempItem?.endDate || ''} onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.value })} placeholder="Presente" />
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="currentJob"
+                    checked={tempItem?.endDate === t('present')}
+                    onChange={(e) => setTempItem({ ...tempItem, endDate: e.target.checked ? t('present') : '' })}
+                    className="rounded border-gray-300 text-black focus:ring-black"
+                  />
+                  <label htmlFor="currentJob" className="text-xs text-gray-600">{lang === 'es' ? 'Trabajo actual' : 'Current job'}</label>
+                </div>
               </div>
             </div>
             <div>
-              <FormLabel>{t('companyOrg')}</FormLabel>
+              <FormLabel>{t('subtitles')}</FormLabel>
               <div className="bg-white border border-gray-200 rounded-md p-2 space-y-2">
                 {(tempItem?.subtitles || []).map((sub: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -597,7 +607,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                         setTempItem({ ...tempItem, subtitles: newSubs });
                       }}
                       className="flex-1 h-8 text-sm"
-                      placeholder={t('companyOrg')}
+                      placeholder={t('subtitles')}
                     />
                     <Button
                       variant="ghost"
