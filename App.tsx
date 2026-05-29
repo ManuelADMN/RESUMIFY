@@ -151,22 +151,44 @@ const App: React.FC = () => {
   };
 
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (isGeneratingPdf) return;
-
     setIsGeneratingPdf(true);
 
     try {
-      if (typeof window.print === 'function') {
-        window.print();
-        window.setTimeout(() => setIsGeneratingPdf(false), 1200);
-      } else {
-        alert(t('pdfError'));
-        setIsGeneratingPdf(false);
-      }
+      const element = document.getElementById('resume-canvas');
+      if (!element) throw new Error('Canvas not found');
+
+      const html2pdf = (window as any).html2pdf;
+      if (typeof html2pdf !== 'function') throw new Error('html2pdf not loaded');
+
+      const filename = `${resumeData.personalInfo.fullName.trim().replace(/\s+/g, '_') || 'CV'}.pdf`;
+
+      await html2pdf()
+        .set({
+          margin: [12, 12, 12, 12],
+          filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 3,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait',
+            compress: true,
+          },
+          pagebreak: { mode: ['css', 'legacy'] },
+        })
+        .from(element)
+        .save();
     } catch (error) {
       console.error('PDF export failed', error);
       alert(t('pdfError'));
+    } finally {
       setIsGeneratingPdf(false);
     }
   };
