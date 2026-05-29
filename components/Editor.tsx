@@ -120,7 +120,7 @@ const AccordionItem: React.FC<{
 );
 
 const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [editingState, setEditingState] = useState<EditingState | null>(null);
   const [tempItem, setTempItem] = useState<any>(null);
   const [activeSection, setActiveSection] = useState<string | null>('personal');
