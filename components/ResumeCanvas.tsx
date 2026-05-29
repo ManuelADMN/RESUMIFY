@@ -8,9 +8,9 @@ interface ResumeCanvasProps {
 
 // Helper for the "Left Content --- Right Content" layout common in the PDF
 const SplitRow: React.FC<{ left: React.ReactNode; right: React.ReactNode; className?: string }> = ({ left, right, className = "" }) => (
-  <div className={`flex justify-between items-baseline w-full ${className}`}>
-    <div className="text-left">{left}</div>
-    <div className="text-right whitespace-nowrap ml-4 shrink-0">{right}</div>
+  <div className={`flex justify-between items-start w-full ${className}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+    <div className="text-left" style={{ textAlign: 'left' }}>{left}</div>
+    <div className="text-right whitespace-nowrap ml-4 shrink-0" style={{ textAlign: 'right', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}>{right}</div>
   </div>
 );
 
@@ -70,7 +70,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
   };
 
   const DateSpan: React.FC<{ start?: string; end?: string }> = ({ start = '', end = '' }) => (
-    <span className="text-[#666666] text-[9pt]">{start}{end ? ` - ${end}` : ''}</span>
+    <span className="text-[#666666] text-[9pt]" style={{ color: '#666666', fontSize: '9pt', whiteSpace: 'nowrap' }}>{start}{end ? ` - ${end}` : ''}</span>
   );
 
   const getFontFamily = (fontName: string) => {
@@ -108,7 +108,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
         <h1 className="font-bold mb-3 text-black" style={{ fontSize: '22pt', lineHeight: 1.05 }}>
           {data.personalInfo.fullName}
         </h1>
-        <div className="text-[9pt] flex flex-nowrap justify-center gap-x-1 text-black items-center" style={{ whiteSpace: 'nowrap' }}>
+        <div className="text-[9pt] flex flex-nowrap justify-center gap-x-1 text-black items-center" style={{ whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'center', alignItems: 'center', fontSize: '9pt', gap: '4px' }}>
             {data.personalInfo.email && (
                 <>
                 <a href={`mailto:${data.personalInfo.email}`} className="hover:underline" style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.email}</a>

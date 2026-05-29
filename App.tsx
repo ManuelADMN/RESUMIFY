@@ -153,25 +153,36 @@ const App: React.FC = () => {
 
   const handleDownloadPDF = async () => {
     if (isGeneratingPdf) return;
+
+    const source = document.getElementById('resume-canvas');
+    if (!source) return;
+
+    const html2pdfLib = (window as any).html2pdf;
+    if (typeof html2pdfLib !== 'function') { alert(t('pdfError')); return; }
+
     setIsGeneratingPdf(true);
 
+    // Clonar el canvas al root del body en posición fija 0,0 para evitar
+    // desplazamientos por el sidebar y overflow:hidden de contenedores padre.
+    // El overlay de carga (z-50) lo tapa visualmente mientras se genera.
+    const clone = source.cloneNode(true) as HTMLElement;
+    clone.style.cssText += ';position:fixed;top:0;left:0;z-index:49;box-shadow:none;margin:0;';
+    document.body.appendChild(clone);
+
+    await new Promise(r => setTimeout(r, 80));
+
     try {
-      const element = document.getElementById('resume-canvas');
-      if (!element) throw new Error('Canvas not found');
+      const name = resumeData.personalInfo.fullName.trim().replace(/\s+/g, '_') || 'CV';
 
-      const html2pdf = (window as any).html2pdf;
-      if (typeof html2pdf !== 'function') throw new Error('html2pdf not loaded');
-
-      const filename = `${resumeData.personalInfo.fullName.trim().replace(/\s+/g, '_') || 'CV'}.pdf`;
-
-      await html2pdf()
+      await html2pdfLib()
         .set({
-          margin: [12, 12, 12, 12],
-          filename,
+          margin: 0,
+          filename: `${name}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
             scale: 3,
             useCORS: true,
+            allowTaint: true,
             logging: false,
             backgroundColor: '#ffffff',
           },
@@ -183,12 +194,13 @@ const App: React.FC = () => {
           },
           pagebreak: { mode: ['css', 'legacy'] },
         })
-        .from(element)
+        .from(clone)
         .save();
     } catch (error) {
       console.error('PDF export failed', error);
       alert(t('pdfError'));
     } finally {
+      document.body.removeChild(clone);
       setIsGeneratingPdf(false);
     }
   };
@@ -322,6 +334,19 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen w-full flex-col md:flex-row overflow-hidden bg-[#0f172a] text-foreground font-sans app-container">
+
+      {/* Overlay de carga del PDF — cubre el clone temporal mientras se genera */}
+      {isGeneratingPdf && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+          <div className="bg-white rounded-2xl px-10 py-8 flex items-center gap-4 shadow-2xl">
+            <Loader2 className="animate-spin text-gray-700 shrink-0" size={32} />
+            <div>
+              <p className="font-semibold text-gray-900 text-lg">{t('generating')}</p>
+              <p className="text-gray-500 text-sm mt-0.5">Esto puede tomar unos segundos...</p>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Editor Panel (Left Sidebar) */}
       <div className="w-full md:w-[420px] flex-shrink-0 z-20 md:h-full flex flex-col border-r border-border bg-white rounded-r-xl shadow-2xl overflow-hidden print:hidden sidebar-panel no-print">
