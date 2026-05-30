@@ -2,10 +2,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ResumeCanvas from './components/ResumeCanvas';
 import PrintPreviewModal from './components/PrintPreviewModal';
+import TestingPanel from './components/TestingPanel';
 import Editor from './components/Editor';
 import { INITIAL_RESUME_DATA, EMPTY_RESUME_DATA } from './constants';
 import { ResumeData } from './types';
-import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor } from 'lucide-react';
+import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor, FlaskConical } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocalManagerOpen, setIsLocalManagerOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [isTestingOpen, setIsTestingOpen] = useState(false);
   const [savedResumesList, setSavedResumesList] = useState<{id: string, name: string, date: string, data: ResumeData}[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -472,6 +474,16 @@ const App: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={() => setIsTestingOpen(true)}
+                  className="text-gray-300 hover:bg-white/10 hover:text-white"
+                  title={lang === 'es' ? 'Panel de Testing' : 'Testing Panel'}
+                >
+                  <FlaskConical size={16} className="mr-2" />
+                  {lang === 'es' ? 'Tests' : 'Tests'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setIsPrintPreviewOpen(true)}
                   className="text-gray-300 hover:bg-white/10 hover:text-white"
                   title={lang === 'es' ? 'Vista de Exportación' : 'Export Preview'}
@@ -494,13 +506,24 @@ const App: React.FC = () => {
               <div
                 className="absolute inset-0 pointer-events-none no-print"
                 style={{
-                  /* Line at 273mm = 297mm page − 12mm top margin − 12mm bottom margin */
-                  backgroundImage: `repeating-linear-gradient(
+                  /* Lines at 285mm, 558mm, 831mm …
+                     = 12mm (ignore-spacer) + N × 273mm (content per page).
+                     The spacer is skipped by html2canvas so PDF cuts at
+                     273mm intervals; HTML layout shifts those by +12mm. */
+                  backgroundImage: `linear-gradient(
                     to bottom,
-                    transparent 0,
-                    transparent calc(273mm - 1px),
-                    rgba(99, 102, 241, 0.5) calc(273mm - 1px),
-                    rgba(99, 102, 241, 0.5) 273mm
+                    transparent calc(285mm - 1px),
+                    rgba(99,102,241,0.55) calc(285mm - 1px),
+                    rgba(99,102,241,0.55) 285mm,
+                    transparent 285mm,
+                    transparent calc(558mm - 1px),
+                    rgba(99,102,241,0.55) calc(558mm - 1px),
+                    rgba(99,102,241,0.55) 558mm,
+                    transparent 558mm,
+                    transparent calc(831mm - 1px),
+                    rgba(99,102,241,0.55) calc(831mm - 1px),
+                    rgba(99,102,241,0.55) 831mm,
+                    transparent 831mm
                   )`,
                   zIndex: 10,
                 }}
@@ -537,6 +560,11 @@ const App: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Testing Panel */}
+      {isTestingOpen && (
+        <TestingPanel data={resumeData} onClose={() => setIsTestingOpen(false)} />
+      )}
 
       {/* Print Preview Modal */}
       {isPrintPreviewOpen && (

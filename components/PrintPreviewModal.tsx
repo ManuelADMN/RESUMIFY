@@ -4,6 +4,13 @@ import { ResumeData } from '../types';
 import ResumeCanvas from './ResumeCanvas';
 import { useLanguage } from '../contexts/LanguageContext';
 
+// Must match the pdf margin [12,0,12,0] in App.tsx
+const PDF_MARGIN_MM = 12;
+// Must match 297 − 12 − 12
+const CONTENT_PER_PAGE_MM = 273;
+// The data-html2canvas-ignore spacer at the top of ResumeCanvas
+const CANVAS_SPACER_MM = 12;
+
 interface PrintPreviewModalProps {
   data: ResumeData;
   onClose: () => void;
@@ -22,13 +29,12 @@ const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   const [pageCount, setPageCount] = useState(1);
 
   useEffect(() => {
-    // Content per page = 297mm − 12mm top margin − 12mm bottom margin = 273mm
-    const CONTENT_MM = 273;
     const measure = (el: HTMLElement) => {
       const pxPerMm = el.offsetWidth / 210;
       if (pxPerMm === 0) return;
-      const pageContentPx = CONTENT_MM * pxPerMm;
-      setPageCount(Math.max(1, Math.ceil(el.scrollHeight / pageContentPx)));
+      // Subtract the spacer from total height to get actual content mm
+      const contentMm = (el.scrollHeight / pxPerMm) - CANVAS_SPACER_MM;
+      setPageCount(Math.max(1, Math.ceil(contentMm / CONTENT_PER_PAGE_MM)));
     };
 
     const existing = document.getElementById('resume-canvas');
@@ -36,6 +42,33 @@ const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
     const el = measureRef.current;
     if (el) measure(el);
   }, [data]);
+
+  /**
+   * For a given page index, return:
+   *  - startMm: where in the canvas (including spacer) this page starts
+   *  - clipMm:  how many mm of canvas to show (fills the content slot)
+   *  - marginTopMm: white space above the content (simulates PDF top margin)
+   *
+   * Page 0:
+   *   The canvas spacer (12mm) is part of the slice and acts as the top margin,
+   *   so we add no extra paddingTop. Clip = spacer + one content page = 285mm.
+   * Page N>0:
+   *   Content starts after the spacer + previous pages, add 12mm top white space.
+   */
+  const pageLayout = (pageIdx: number) => {
+    if (pageIdx === 0) {
+      return {
+        startMm: 0,
+        clipMm: CANVAS_SPACER_MM + CONTENT_PER_PAGE_MM, // 285mm
+        marginTopMm: 0,
+      };
+    }
+    return {
+      startMm: CANVAS_SPACER_MM + pageIdx * CONTENT_PER_PAGE_MM, // 12 + N*273
+      clipMm: CONTENT_PER_PAGE_MM, // 273mm
+      marginTopMm: PDF_MARGIN_MM, // 12mm white at top of page
+    };
+  };
 
   return (
     <div
@@ -52,10 +85,10 @@ const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {lang === 'es' ? 'Vista de Exportación' : 'Export Preview'}
           </span>
           <span className="text-gray-400 text-xs">
-            {pageCount} {lang === 'es' ? (pageCount === 1 ? 'página' : 'páginas') : (pageCount === 1 ? 'page' : 'pages')}
-          </span>
-          <span className="text-gray-500 text-xs px-2 py-0.5 rounded border border-gray-700">
-            {lang === 'es' ? 'La línea azul indica el corte de página' : 'Blue line marks the page break'}
+            {pageCount}{' '}
+            {lang === 'es'
+              ? pageCount === 1 ? 'página' : 'páginas'
+              : pageCount === 1 ? 'page' : 'pages'}
           </span>
         </div>
         <div className="flex items-center gap-3">
@@ -98,48 +131,44 @@ const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
           <ResumeCanvas data={data} />
         </div>
 
-        {/* One div per page — each clips the canvas to its slice */}
-        {Array.from({ length: pageCount }).map((_, pageIdx) => (
-          <div key={pageIdx} className="flex flex-col items-center gap-2">
-            {/* Page label */}
-            <div className="text-gray-400 text-xs font-medium tracking-wide uppercase">
-              {lang === 'es' ? 'Página' : 'Page'} {pageIdx + 1}
-            </div>
+        {Array.from({ length: pageCount }).map((_, pageIdx) => {
+          const { startMm, clipMm, marginTopMm } = pageLayout(pageIdx);
+          return (
+            <div key={pageIdx} className="flex flex-col items-center gap-2">
+              <div className="text-gray-400 text-xs font-medium tracking-wide uppercase">
+                {lang === 'es' ? 'Página' : 'Page'} {pageIdx + 1}
+              </div>
 
-            {/* Page frame — 297mm tall with 12mm top+bottom margin matching the PDF */}
-            <div
-              className="relative shadow-2xl overflow-hidden"
-              style={{
-                width: '210mm',
-                height: '297mm',
-                backgroundColor: 'white',
-              }}
-            >
-              {/* 12mm top margin (white) then 273mm of canvas content for this page */}
-              <div style={{ paddingTop: '12mm' }}>
-                <div
-                  style={{
-                    height: '273mm',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div style={{ transform: `translateY(-${pageIdx * 273}mm)` }}>
-                    <ResumeCanvas data={data} />
+              {/* A4 page frame */}
+              <div
+                className="relative shadow-2xl"
+                style={{
+                  width: '210mm',
+                  height: '297mm',
+                  backgroundColor: 'white',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Top margin (white) + content slice */}
+                <div style={{ paddingTop: `${marginTopMm}mm`, overflow: 'hidden' }}>
+                  <div style={{ height: `${clipMm}mm`, overflow: 'hidden' }}>
+                    <div style={{ transform: `translateY(-${startMm}mm)` }}>
+                      <ResumeCanvas data={data} />
+                    </div>
                   </div>
                 </div>
-              </div>
-              {/* Bottom 12mm is automatically white because container height is 297mm */}
+                {/* Bottom margin is automatic white (297 − marginTop − clipMm = 12mm) */}
 
-              {/* Page number stamp */}
-              <div
-                className="absolute bottom-2 right-3 pointer-events-none select-none"
-                style={{ fontSize: '7pt', color: '#d1d5db' }}
-              >
-                {pageIdx + 1} / {pageCount}
+                <div
+                  className="absolute bottom-2 right-3 pointer-events-none select-none"
+                  style={{ fontSize: '7pt', color: '#d1d5db' }}
+                >
+                  {pageIdx + 1} / {pageCount}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
