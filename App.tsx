@@ -53,6 +53,19 @@ const App: React.FC = () => {
   }, [resumeData]);
 
   const promptingGuide = `{
+  "sectionOrder": [
+    "technicalSkills",
+    "education",
+    "experience",
+    "projects",
+    "certifications",
+    "skills",
+    "languages",
+    "workshops",
+    "links"
+  ],
+  "hiddenSections": [],
+  "font": "Arial",
   "personalInfo": {
     "fullName": "Tu Nombre Completo",
     "email": "tu@email.com",
@@ -63,6 +76,25 @@ const App: React.FC = () => {
     "website": "tu-sitio-web.com",
     "summary": "Un breve resumen profesional sobre ti."
   },
+  "technicalSkills": [
+    {
+      "id": "1",
+      "category": "Tecnologías",
+      "items": "JavaScript, TypeScript, React, Node.js, Python"
+    },
+    {
+      "id": "2",
+      "category": "Herramientas",
+      "items": "Git, Docker, VS Code, Figma"
+    }
+  ],
+  "languages": [
+    {
+      "id": "1",
+      "category": "",
+      "items": "Español [Nativo], Inglés [Intermedio]"
+    }
+  ],
   "education": [
     {
       "id": "1",
@@ -72,6 +104,7 @@ const App: React.FC = () => {
       "startDate": "Mes Año",
       "endDate": "Mes Año o Presente",
       "gpaOrHonors": "Promedio o Honores (opcional)",
+      "subtitles": ["Área de especialización (opcional)"],
       "bullets": [
         "Detalle o logro académico destacado (opcional)"
       ]
@@ -85,6 +118,7 @@ const App: React.FC = () => {
       "location": "Ciudad, País o Remoto",
       "startDate": "Mes Año",
       "endDate": "Mes Año o Presente",
+      "subtitles": ["Tipo de contrato (opcional)"],
       "bullets": [
         "Responsabilidad o logro clave 1",
         "Responsabilidad o logro clave 2"
@@ -97,21 +131,13 @@ const App: React.FC = () => {
       "id": "1",
       "name": "Nombre del Proyecto",
       "technologies": "React, TypeScript, Tailwind",
+      "startDate": "Mes Año (opcional)",
+      "endDate": "Mes Año o Presente (opcional)",
+      "subtitles": ["Organización o contexto (opcional)"],
       "description": [
         "Descripción del proyecto y tus contribuciones"
       ],
-      "link": "Enlace al proyecto (opcional)",
-      "date": "Mes Año (opcional)"
-    }
-  ],
-  "skills": [
-    {
-      "id": "1",
-      "category": "Lenguajes de Programación",
-      "items": "JavaScript, TypeScript, Python",
-      "bullets": [
-        "Detalle o logro relevante usando estas tecnologías (opcional)"
-      ]
+      "link": "Enlace al proyecto (opcional)"
     }
   ],
   "certifications": [
@@ -119,11 +145,20 @@ const App: React.FC = () => {
       "id": "1",
       "name": "Nombre de la Certificación",
       "issuer": "Institución Emisora",
-      "date": "Mes Año",
+      "startDate": "Mes Año",
+      "endDate": "Mes Año (opcional)",
       "link": "Enlace a la credencial (opcional)",
       "bullets": [
-        "Detalle o logro relevante de la certificación (opcional)"
+        "Detalle o logro relevante (opcional)"
       ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "1",
+      "category": "Habilidades Blandas",
+      "items": "Trabajo en equipo, Comunicación, Adaptabilidad",
+      "bullets": []
     }
   ],
   "workshops": [
@@ -131,9 +166,11 @@ const App: React.FC = () => {
       "id": "1",
       "name": "Nombre del Taller / Conferencia",
       "organizer": "Organizador / Institución",
-      "date": "Mes Año",
+      "startDate": "Mes Año",
+      "endDate": "Mes Año (opcional)",
       "location": "Ubicación (opcional)",
       "link": "Enlace al taller/evento (opcional)",
+      "subtitles": [],
       "bullets": [
         "Detalle o aprendizaje del taller (opcional)"
       ]
