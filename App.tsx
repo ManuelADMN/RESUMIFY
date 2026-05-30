@@ -166,10 +166,14 @@ const App: React.FC = () => {
       const html2pdfLib = (window as any).html2pdf;
       if (typeof html2pdfLib !== 'function') throw new Error('html2pdf not loaded');
 
-      // Scroll el área de preview al inicio para que el canvas esté visible
       const scrollArea = document.querySelector('.scroll-area') as HTMLElement | null;
       const savedScroll = scrollArea?.scrollTop ?? 0;
       if (scrollArea) scrollArea.scrollTop = 0;
+
+      // Zero the preview-only spacer so html2pdf's page-break algorithm
+      // sees element positions identical to the rendered PDF (no 12mm offset).
+      const spacerEl = element.querySelector('[data-html2canvas-ignore]') as HTMLElement | null;
+      if (spacerEl) spacerEl.style.height = '0';
       await new Promise(r => setTimeout(r, 60));
 
       const name = resumeData.personalInfo.fullName.trim().replace(/\s+/g, '_') || 'CV';
@@ -204,6 +208,9 @@ const App: React.FC = () => {
       console.error('PDF export failed', error);
       alert(t('pdfError'));
     } finally {
+      // Always restore the preview spacer height
+      const spacerRestore = document.querySelector('#resume-canvas [data-html2canvas-ignore]') as HTMLElement | null;
+      if (spacerRestore) spacerRestore.style.height = '12mm';
       setIsGeneratingPdf(false);
     }
   };
@@ -471,16 +478,18 @@ const App: React.FC = () => {
                     <Globe size={16} className="mr-2" />
                     {lang === 'es' ? 'ES' : 'EN'}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsTestingOpen(true)}
-                  className="text-gray-300 hover:bg-white/10 hover:text-white"
-                  title={lang === 'es' ? 'Panel de Testing' : 'Testing Panel'}
-                >
-                  <FlaskConical size={16} className="mr-2" />
-                  {lang === 'es' ? 'Tests' : 'Tests'}
-                </Button>
+                {/* Tests button — developer-only, hidden in production */}
+                {import.meta.env.DEV && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsTestingOpen(true)}
+                    className="text-gray-500 hover:bg-white/10 hover:text-white"
+                    title="Testing Panel (dev only)"
+                  >
+                    <FlaskConical size={14} />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"

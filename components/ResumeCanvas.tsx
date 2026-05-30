@@ -242,14 +242,14 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
             const renderEdu = (edu: typeof data.education[0]) => {
               const subs = [edu.degree, edu.gpaOrHonors, ...(edu.subtitles || []), edu.location].filter(Boolean) as string[];
               return (
-                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <>
                   <SplitRow
                     left={<span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.institution}</span>}
                     right={<DateSpan start={edu.startDate} end={edu.endDate} />}
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={edu.bullets || []} />
-                </div>
+                </>
               );
             };
             return (
@@ -258,7 +258,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   {renderEdu(data.education[0])}
                 </SectionHeaderGroup>
                 {data.education.slice(1).map((edu) => (
-                  <div key={edu.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={edu.id} className="break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     {renderEdu(edu)}
                   </div>
                 ))}
@@ -271,7 +271,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
             const renderExp = (exp: typeof data.experience[0]) => {
               const subs = [exp.role, ...(exp.subtitles || []), exp.location].filter(Boolean) as string[];
               return (
-                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <>
                   <SplitRow
                     left={
                       <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
@@ -287,7 +287,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={exp.bullets || []} />
-                </div>
+                </>
               );
             };
             return (
@@ -296,7 +296,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   {renderExp(data.experience[0])}
                 </SectionHeaderGroup>
                 {data.experience.slice(1).map((exp) => (
-                  <div key={exp.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={exp.id} className="break-inside-avoid" style={{ marginTop: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     {renderExp(exp)}
                   </div>
                 ))}
@@ -309,7 +309,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
             const renderProj = (proj: typeof data.projects[0]) => {
               const subs = [...(proj.subtitles || []), proj.technologies, proj.location].filter(Boolean) as string[];
               return (
-                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <>
                   <SplitRow
                     left={
                       <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
@@ -325,7 +325,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={proj.description || []} />
-                </div>
+                </>
               );
             };
             return (
@@ -334,7 +334,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   {renderProj(data.projects[0])}
                 </SectionHeaderGroup>
                 {data.projects.slice(1).map((proj) => (
-                  <div key={proj.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={proj.id} className="break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     {renderProj(proj)}
                   </div>
                 ))}
@@ -345,7 +345,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
           case 'certifications': {
             if (!data.certifications || data.certifications.length === 0) return null;
             const renderCert = (cert: typeof data.certifications[0]) => (
-              <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+              <>
                 <SplitRow
                   left={<span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{cert.name}</span>}
                   right={<DateSpan start={cert.startDate} end={cert.endDate} />}
@@ -362,7 +362,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   </div>
                 )}
                 <BulletList items={cert.bullets || []} />
-              </div>
+              </>
             );
             return (
               <section key={sectionId}>
@@ -370,7 +370,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   {renderCert(data.certifications[0])}
                 </SectionHeaderGroup>
                 {data.certifications.slice(1).map((cert) => (
-                  <div key={cert.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={cert.id} className="break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     {renderCert(cert)}
                   </div>
                 ))}
@@ -408,7 +408,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
             const renderWs = (ws: WorkshopItem) => {
               const subs = [ws.organizer, ...(ws.subtitles || []), (ws.location && !/^\s*(remoto|remote)\s*$/i.test(ws.location) ? ws.location : '')].filter(Boolean) as string[];
               return (
-                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <>
                   <SplitRow
                     left={
                       <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
@@ -424,7 +424,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={ws.bullets || []} />
-                </div>
+                </>
               );
             };
             return (
@@ -433,7 +433,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                   {renderWs(data.workshops![0])}
                 </SectionHeaderGroup>
                 {data.workshops!.slice(1).map((ws) => (
-                  <div key={ws.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <div key={ws.id} className="break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                     {renderWs(ws)}
                   </div>
                 ))}
