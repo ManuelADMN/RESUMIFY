@@ -16,6 +16,8 @@ export interface ResumeData {
   experience: ExperienceItem[];
   projects: ProjectItem[];
   skills: SkillItem[];
+  technicalSkills?: SkillItem[];
+  languages?: SkillItem[];
   certifications: CertificationItem[];
   workshops?: WorkshopItem[];
   links?: LinkItem[];
@@ -98,6 +100,8 @@ export enum SectionType {
   EXPERIENCE = 'experience',
   PROJECTS = 'projects',
   SKILLS = 'skills',
+  TECHNICAL_SKILLS = 'technicalSkills',
+  LANGUAGES = 'languages',
   CERTIFICATIONS = 'certifications',
   WORKSHOPS = 'workshops',
   LINKS = 'links'

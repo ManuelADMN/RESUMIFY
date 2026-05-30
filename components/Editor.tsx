@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { ResumeData, ExperienceItem, EducationItem, ProjectItem, SkillItem, CertificationItem } from '../types';
-import { Plus, Trash2, GripVertical, Briefcase, GraduationCap, Code2, ChevronDown, ChevronRight, Award, Wrench, Eye, EyeOff } from 'lucide-react';
+import { ResumeData, ExperienceItem, EducationItem, ProjectItem, SkillItem, CertificationItem, WorkshopItem, LinkItem } from '../types';
+import { Plus, Trash2, GripVertical, Briefcase, GraduationCap, Code2, ChevronDown, ChevronRight, Award, Wrench, Eye, EyeOff, Languages, Cpu } from 'lucide-react';
 import {
   Button, Input, Textarea,
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose,
@@ -15,7 +15,7 @@ interface EditorProps {
   onChange: (newData: ResumeData) => void;
 }
 
-type ModalType = 'education' | 'experience' | 'project' | 'skill' | 'certification' | 'workshop' | 'link' | null;
+type ModalType = 'education' | 'experience' | 'project' | 'skill' | 'technicalSkill' | 'language' | 'certification' | 'workshop' | 'link' | null;
 
 interface EditingState {
   type: ModalType;
@@ -151,6 +151,8 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
       if (type === 'experience') initialItem = { id: crypto.randomUUID(), company: '', role: '', location: '', startDate: '', endDate: t('present'), bullets: [''], subtitles: [] };
       if (type === 'project') initialItem = { id: crypto.randomUUID(), name: '', technologies: '', description: [''], link: '', startDate: '', endDate: '', location: '', subtitles: [] };
       if (type === 'skill') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
+      if (type === 'technicalSkill') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
+      if (type === 'language') initialItem = { id: crypto.randomUUID(), category: '', items: '', bullets: [] };
       if (type === 'certification') initialItem = { id: crypto.randomUUID(), name: '', issuer: '', startDate: '', endDate: '', link: '', location: '', bullets: [] };
       if (type === 'workshop') initialItem = { id: crypto.randomUUID(), name: '', organizer: '', startDate: '', endDate: '', location: '', link: '', bullets: [], subtitles: [] };
       if (type === 'link') initialItem = { id: crypto.randomUUID(), label: '', url: '' };
@@ -179,6 +181,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
       newData.projects = upsert(newData.projects, tempItem as ProjectItem, editingState.id);
     } else if (editingState.type === 'skill') {
       newData.skills = upsert(newData.skills, tempItem as SkillItem, editingState.id);
+    } else if (editingState.type === 'technicalSkill') {
+      newData.technicalSkills = upsert(newData.technicalSkills || [], tempItem as SkillItem, editingState.id);
+    } else if (editingState.type === 'language') {
+      newData.languages = upsert(newData.languages || [], tempItem as SkillItem, editingState.id);
     } else if (editingState.type === 'certification') {
       newData.certifications = upsert(newData.certifications || [], tempItem as CertificationItem, editingState.id);
     } else if (editingState.type === 'workshop') {
@@ -198,16 +204,15 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
     if (type === 'experience') newData.experience = newData.experience.filter(i => i.id !== id);
     if (type === 'project') newData.projects = newData.projects.filter(i => i.id !== id);
     if (type === 'skill') newData.skills = newData.skills.filter(i => i.id !== id);
+    if (type === 'technicalSkill') newData.technicalSkills = (newData.technicalSkills || []).filter(i => i.id !== id);
+    if (type === 'language') newData.languages = (newData.languages || []).filter(i => i.id !== id);
     if (type === 'certification') newData.certifications = (newData.certifications || []).filter(i => i.id !== id);
     if (type === 'workshop') newData.workshops = (newData.workshops || []).filter(i => i.id !== id);
     if (type === 'link') newData.links = (newData.links || []).filter(i => i.id !== id);
     onChange(newData);
   };
 
-  const DEFAULT_SECTION_ORDER = ['education', 'experience', 'projects', 'certifications', 'skills', 'links'];
-  
-  // Remove 'workshops' from default ordering as this section is not shown by default
-  // (kept workshop modal/code for optional use)
+  const DEFAULT_SECTION_ORDER = ['technicalSkills', 'education', 'experience', 'projects', 'certifications', 'skills', 'languages', 'workshops', 'links'];
 
   return (
     <div className="h-full bg-white p-6 space-y-6 pb-20">
@@ -343,6 +348,52 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                           onEdit={() => openModal('certification', cert)}
                           onDelete={(e) => { e.stopPropagation(); deleteItem('certification', cert.id); }}
                         />
+                    )}
+                  />
+                </div>
+              );
+
+            case 'technicalSkills':
+              return (
+                <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
+                    <GripVertical className="h-5 w-5" />
+                  </div>
+                  <SectionHeader title={t('technicalSkills')} icon={Cpu} onAdd={() => openModal('technicalSkill')} onToggleVisibility={() => toggleSectionVisibility('technicalSkills')} isHidden={isSectionHidden('technicalSkills')} />
+                  <SortableList
+                    items={data.technicalSkills || []}
+                    onReorder={(list) => onChange({ ...data, technicalSkills: list })}
+                    keyExtractor={(i) => i.id}
+                    renderItem={(skill) => (
+                      <ListItemCard
+                        title={skill.category}
+                        subtitle={skill.items}
+                        onEdit={() => openModal('technicalSkill', skill)}
+                        onDelete={(e) => { e.stopPropagation(); deleteItem('technicalSkill', skill.id); }}
+                      />
+                    )}
+                  />
+                </div>
+              );
+
+            case 'languages':
+              return (
+                <div className="p-2 border border-transparent hover:border-gray-200 rounded-lg group/section transition-colors bg-white">
+                  <div className="flex justify-center opacity-20 group-hover/section:opacity-70 transition-opacity -mb-4 cursor-move text-gray-400">
+                    <GripVertical className="h-5 w-5" />
+                  </div>
+                  <SectionHeader title={t('languages')} icon={Languages} onAdd={() => openModal('language')} onToggleVisibility={() => toggleSectionVisibility('languages')} isHidden={isSectionHidden('languages')} />
+                  <SortableList
+                    items={data.languages || []}
+                    onReorder={(list) => onChange({ ...data, languages: list })}
+                    keyExtractor={(i) => i.id}
+                    renderItem={(lang_item) => (
+                      <ListItemCard
+                        title={lang_item.category}
+                        subtitle={lang_item.items}
+                        onEdit={() => openModal('language', lang_item)}
+                        onDelete={(e) => { e.stopPropagation(); deleteItem('language', lang_item.id); }}
+                      />
                     )}
                   />
                 </div>
@@ -933,6 +984,54 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                   {t('addBullet')}
                 </Button>
               </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
+            <Button onClick={saveModal} className="bg-black text-white hover:bg-gray-800">{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Technical Skill Modal */}
+      <Dialog open={editingState?.type === 'technicalSkill'} onOpenChange={closeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('technicalSkills')}</DialogTitle>
+            <DialogClose onClick={closeModal} />
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div>
+              <FormLabel>{t('category')}</FormLabel>
+              <Input value={tempItem?.category || ''} onChange={(e) => setTempItem({ ...tempItem, category: e.target.value })} placeholder={t('techCatPlace')} />
+            </div>
+            <div>
+              <FormLabel>{t('itemsList')}</FormLabel>
+              <Textarea value={tempItem?.items || ''} onChange={(e) => setTempItem({ ...tempItem, items: e.target.value })} placeholder={t('techItemsPlace')} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={closeModal}>{t('cancel')}</Button>
+            <Button onClick={saveModal} className="bg-black text-white hover:bg-gray-800">{t('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Language Modal */}
+      <Dialog open={editingState?.type === 'language'} onOpenChange={closeModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('languages')}</DialogTitle>
+            <DialogClose onClick={closeModal} />
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div>
+              <FormLabel>{t('category')}</FormLabel>
+              <Input value={tempItem?.category || ''} onChange={(e) => setTempItem({ ...tempItem, category: e.target.value })} placeholder={t('langCatPlace')} />
+            </div>
+            <div>
+              <FormLabel>{t('itemsList')}</FormLabel>
+              <Textarea value={tempItem?.items || ''} onChange={(e) => setTempItem({ ...tempItem, items: e.target.value })} placeholder={t('langItemsPlace')} />
             </div>
           </div>
           <DialogFooter>

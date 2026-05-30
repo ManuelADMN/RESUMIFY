@@ -1,38 +1,46 @@
 import React from 'react';
-import { ResumeData } from '../types';
+import { ResumeData, SkillItem, WorkshopItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface ResumeCanvasProps {
   data: ResumeData;
 }
 
-// Helper for the "Left Content --- Right Content" layout common in the PDF
-const SplitRow: React.FC<{ left: React.ReactNode; right: React.ReactNode; className?: string }> = ({ left, right, className = "" }) => (
-  <div className={`flex justify-between items-start w-full ${className}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-    <div className="text-left" style={{ textAlign: 'left' }}>{left}</div>
-    <div className="text-right whitespace-nowrap ml-4 shrink-0" style={{ textAlign: 'right', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}>{right}</div>
+const SplitRow: React.FC<{ left: React.ReactNode; right: React.ReactNode }> = ({ left, right }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+    <div style={{ textAlign: 'left' }}>{left}</div>
+    <div style={{ textAlign: 'right', whiteSpace: 'nowrap', marginLeft: '16px', flexShrink: 0 }}>{right}</div>
   </div>
 );
 
 const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
-  <div className="w-full mb-2 mt-5 break-after-avoid print:mt-4">
-    <h2 className="text-[13pt] font-bold uppercase border-b border-black pb-1 mb-1 text-black" style={{ borderBottomWidth: '0.5px' }}>
+  <div style={{ width: '100%', marginBottom: '5px', marginTop: '14px' }}>
+    <h2 style={{ fontSize: '13pt', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '0.5px solid black', paddingBottom: '2px', marginBottom: '2px', color: 'black' }}>
       {title}
     </h2>
   </div>
 );
 
-// Styled middle dot divider with spaced proportions before and after
+/**
+ * Groups a section header with its first item so html2pdf never orphans
+ * the header at the bottom of a page without content following it.
+ */
+const SectionHeaderGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div className="section-header-group break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+    <SectionHeader title={title} />
+    {children}
+  </div>
+);
+
 const CenteredDivider: React.FC = () => (
-  <span className="mx-2.5 text-gray-400 select-none font-normal" style={{ fontSize: '10pt', verticalAlign: 'middle' }}>&middot;</span>
+  <span style={{ margin: '0 7px', color: '#9ca3af', fontSize: '10pt', verticalAlign: 'middle' }}>&middot;</span>
 );
 
 const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
   const { t, lang } = useLanguage();
 
-  const isUrl = (text: string) => {
-    return text.startsWith('http') || text.startsWith('www') || text.includes('.com') || text.includes('.cl') || text.includes('.dev');
-  };
+  const isUrl = (text: string) =>
+    text.startsWith('http') || text.startsWith('www') || text.includes('.com') || text.includes('.cl') || text.includes('.dev');
 
   const formatUrl = (text: string) => {
     if (text.startsWith('www')) return `https://${text}`;
@@ -41,485 +49,430 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
   };
 
   const formatContactLink = (field: 'linkedin' | 'github' | 'website', value: string) => {
-    const cleanValue = value.trim().replace(/^https?:\/\/(www\.)?/, '').replace(/^www\./, '');
-    
+    const clean = value.trim().replace(/^https?:\/\/(www\.)?/, '').replace(/^www\./, '');
     if (field === 'linkedin') {
-      const username = cleanValue.replace(/^linkedin\.com\/in\//, '').replace(/^\/in\//, '').replace(/^@/, '');
-      return {
-        href: `https://linkedin.com/in/${username}`,
-        label: `linkedin.com/in/${username}`
-      };
+      const u = clean.replace(/^linkedin\.com\/in\//, '').replace(/^\/in\//, '').replace(/^@/, '');
+      return { href: `https://linkedin.com/in/${u}` };
     }
-    
     if (field === 'github') {
-      const username = cleanValue.replace(/^github\.com\//, '').replace(/^@/, '');
-      return {
-        href: `https://github.com/${username}`,
-        label: `github.com/${username}`
-      };
+      const u = clean.replace(/^github\.com\//, '').replace(/^@/, '');
+      return { href: `https://github.com/${u}` };
     }
-    
-    if (field === 'website') {
-      return {
-        href: value.startsWith('http') ? value : `https://${value}`,
-        label: cleanValue
-      };
-    }
-    
-    return { href: value, label: value };
+    return { href: value.startsWith('http') ? value : `https://${value}` };
   };
 
+  const linkLabel = lang === 'es' ? 'Enlace' : 'Link';
+
   const DateSpan: React.FC<{ start?: string; end?: string }> = ({ start = '', end = '' }) => (
-    <span className="text-[#666666] text-[9pt]" style={{ color: '#666666', fontSize: '9pt', whiteSpace: 'nowrap' }}>{start}{end ? ` - ${end}` : ''}</span>
+    <span style={{ color: '#666666', fontSize: '9pt', whiteSpace: 'nowrap' }}>
+      {start}{end ? ` - ${end}` : ''}
+    </span>
   );
+
+  /**
+   * Border-bottom is used instead of text-decoration because html2canvas
+   * renders border-bottom as part of the box model (guaranteed tight),
+   * while text-underline-offset can mis-render in PDF exports.
+   */
+  const InlineLink: React.FC<{ href: string }> = ({ href }) => (
+    <a href={formatUrl(href)} target="_blank" rel="noreferrer"
+      style={{ color: 'inherit', textDecoration: 'none' }}>
+      <span style={{ borderBottom: '0.5px solid currentColor', lineHeight: 1 }}>
+        {linkLabel}
+      </span>
+    </a>
+  );
+
+  const SubtitleRow: React.FC<{ items: (string | undefined)[] }> = ({ items }) => {
+    const valid = items.filter(Boolean) as string[];
+    if (valid.length === 0) return null;
+    return (
+      <div style={{ fontSize: '9.5pt', color: '#6b7280', marginTop: '2px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+        {valid.map((sub, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <CenteredDivider />}
+            <span>{sub}</span>
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
+  const BulletList: React.FC<{ items: string[] }> = ({ items }) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <ul style={{ marginTop: '4px', paddingLeft: '18px', listStyleType: 'disc' }}>
+        {items.map((b, i) => (
+          <li key={i} style={{ fontSize: '9.5pt', color: 'black', lineHeight: 1.35, marginBottom: '1px' }}>{b}</li>
+        ))}
+      </ul>
+    );
+  };
 
   const getFontFamily = (fontName: string) => {
     switch (fontName) {
-      case 'Arial':
-        return 'Arial, Helvetica, sans-serif';
-      case 'Calibri':
-        return 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
-      case 'Helvetica':
-        return 'Helvetica, Arial, sans-serif';
-      case 'Times New Roman':
-        return '"Times New Roman", Times, serif';
-      default:
-        return 'Arial, Helvetica, sans-serif';
+      case 'Arial': return 'Arial, Helvetica, sans-serif';
+      case 'Calibri': return 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
+      case 'Helvetica': return 'Helvetica, Arial, sans-serif';
+      case 'Times New Roman': return '"Times New Roman", Times, serif';
+      default: return 'Arial, Helvetica, sans-serif';
     }
   };
 
+  const sectionOrder = data.sectionOrder || ['technicalSkills', 'education', 'experience', 'projects', 'certifications', 'skills', 'languages', 'workshops', 'links'];
+  const hiddenSections = data.hiddenSections || [];
+
   return (
-    <div 
+    <div
       id="resume-canvas"
-      className="resume-page bg-white mx-auto text-black print:w-full print:h-full print:absolute print:top-0 print:left-0"
       style={{
         width: '210mm',
         minHeight: '297mm',
-        padding: '12mm 12mm',
+        padding: '12mm 12mm 14mm 12mm',
         boxSizing: 'border-box',
         fontSize: '10pt',
-        lineHeight: 1.08,
+        lineHeight: 1.1,
         backgroundColor: 'white',
-        fontFamily: getFontFamily(data.font || 'Arial')
+        color: 'black',
+        fontFamily: getFontFamily(data.font || 'Arial'),
       }}
     >
       {/* Header */}
-      <header className="text-center mb-2">
-        <h1 className="font-bold mb-3 text-black" style={{ fontSize: '22pt', lineHeight: 1.05 }}>
+      <header style={{ textAlign: 'center', marginBottom: '8px' }}>
+        <h1 style={{ fontWeight: 'bold', marginBottom: '10px', color: 'black', fontSize: '22pt', lineHeight: 1.05 }}>
           {data.personalInfo.fullName}
         </h1>
-        <div className="text-[9pt] flex flex-nowrap justify-center gap-x-1 text-black items-center" style={{ whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'center', alignItems: 'center', fontSize: '9pt', gap: '4px' }}>
-            {data.personalInfo.email && (
-                <>
-                <a href={`mailto:${data.personalInfo.email}`} className="hover:underline" style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.email}</a>
-                </>
-            )}
-            {data.personalInfo.phone && (
-                <>
-                <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
-                <span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.phone}</span>
-                </>
-            )}
-            {data.personalInfo.location && (
-                <>
-                <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
-                <span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.location}</span>
-                </>
-            )}
-            {data.personalInfo.linkedin && (() => {
-                const linkInfo = formatContactLink('linkedin', data.personalInfo.linkedin);
-                return (
-                  <>
-                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>LinkedIn</a>
-                  </>
-                );
-            })()}
-            {data.personalInfo.github && (() => {
-                const linkInfo = formatContactLink('github', data.personalInfo.github);
-                return (
-                  <>
-                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>GitHub</a>
-                  </>
-                );
-            })()}
-            {data.personalInfo.website && (() => {
-                const linkInfo = formatContactLink('website', data.personalInfo.website);
-                return (
-                  <>
-                  <span className="mx-1" style={{ whiteSpace: 'nowrap' }}>|</span>
-                  <a href={linkInfo.href} target="_blank" rel="noreferrer" className="hover:underline" style={{ whiteSpace: 'nowrap' }}>
-                    {lang === 'es' ? 'Sitio Web' : 'Website'}
-                  </a>
-                  </>
-                );
-            })()}
+        <div style={{ fontSize: '9pt', display: 'flex', flexWrap: 'nowrap', justifyContent: 'center', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
+          {data.personalInfo.email && (
+            <a href={`mailto:${data.personalInfo.email}`} style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>
+              {data.personalInfo.email}
+            </a>
+          )}
+          {data.personalInfo.phone && (
+            <><span style={{ margin: '0 3px' }}>|</span><span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.phone}</span></>
+          )}
+          {data.personalInfo.location && (
+            <><span style={{ margin: '0 3px' }}>|</span><span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.location}</span></>
+          )}
+          {data.personalInfo.linkedin && (() => {
+            const { href } = formatContactLink('linkedin', data.personalInfo.linkedin);
+            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>LinkedIn</a></>;
+          })()}
+          {data.personalInfo.github && (() => {
+            const { href } = formatContactLink('github', data.personalInfo.github);
+            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>GitHub</a></>;
+          })()}
+          {data.personalInfo.website && (() => {
+            const { href } = formatContactLink('website', data.personalInfo.website);
+            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>{linkLabel}</a></>;
+          })()}
         </div>
       </header>
 
-      {/* Thick Asymmetrical Line above Summary */}
-      <div className="w-full h-[3px] bg-black mb-6 mt-4 print:bg-black"></div>
+      {/* Divider */}
+      <div style={{ width: '100%', height: '3px', backgroundColor: 'black', margin: '10px 0 14px' }} />
 
-      {/* Summary (Resumen) */}
-      <section>
-          <h2 className="text-[13pt] font-bold uppercase mb-1 text-black">
-            {t('summary')}
-          </h2>
-          <p className="text-black whitespace-pre-wrap">
-            {data.personalInfo.summary}
-          </p>
-      </section>
+      {/* Summary */}
+      <div className="section-header-group break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid', marginBottom: '2px' }}>
+        <h2 style={{ fontSize: '13pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: 'black' }}>
+          {t('summary')}
+        </h2>
+        <p style={{ color: 'black', lineHeight: 1.35, margin: 0 }}>
+          {data.personalInfo.summary}
+        </p>
+      </div>
 
-      {(data.sectionOrder || ['education', 'experience', 'projects', 'certifications', 'skills', 'links']).map(sectionId => {
-        if ((data.hiddenSections || []).includes(sectionId)) return null;
+      {sectionOrder.map(sectionId => {
+        if (hiddenSections.includes(sectionId)) return null;
+
         switch (sectionId) {
-          case 'education':
+
+          case 'technicalSkills': {
+            if (!data.technicalSkills || data.technicalSkills.length === 0) return null;
+            const renderTechSkill = (skill: SkillItem) => (
+              <div style={{ marginBottom: '5px' }}>
+                {skill.category && (
+                  <div style={{ fontWeight: 'bold', fontSize: '10pt', lineHeight: 1.2 }}>{skill.category}</div>
+                )}
+                <div style={{ fontSize: '9.5pt', lineHeight: 1.35, color: '#111111' }}>{skill.items}</div>
+              </div>
+            );
+            return (
+              <section key={sectionId}>
+                <SectionHeaderGroup title={t('technicalSkills')}>
+                  {renderTechSkill(data.technicalSkills[0])}
+                </SectionHeaderGroup>
+                {data.technicalSkills.slice(1).map((skill) => (
+                  <div key={skill.id} className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderTechSkill(skill)}
+                  </div>
+                ))}
+              </section>
+            );
+          }
+
+          case 'languages': {
+            if (!data.languages || data.languages.length === 0) return null;
+            return (
+              <section key={sectionId}>
+                <SectionHeaderGroup title={t('languages')}>
+                  <div>
+                    {data.languages.map((lang_item) => (
+                      <div key={lang_item.id} style={{ marginBottom: '3px' }}>
+                        {lang_item.category && (
+                          <div style={{ fontWeight: 'bold', fontSize: '10pt', lineHeight: 1.2 }}>{lang_item.category}</div>
+                        )}
+                        <div style={{ fontSize: '9.5pt', lineHeight: 1.35 }}>{lang_item.items}</div>
+                      </div>
+                    ))}
+                  </div>
+                </SectionHeaderGroup>
+              </section>
+            );
+          }
+
+          case 'education': {
             if (data.education.length === 0) return null;
+            const renderEdu = (edu: typeof data.education[0]) => {
+              const subs = [edu.degree, edu.gpaOrHonors, ...(edu.subtitles || []), edu.location].filter(Boolean) as string[];
+              return (
+                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <SplitRow
+                    left={<span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.institution}</span>}
+                    right={<DateSpan start={edu.startDate} end={edu.endDate} />}
+                  />
+                  <SubtitleRow items={subs} />
+                  <BulletList items={edu.bullets || []} />
+                </div>
+              );
+            };
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('education')} />
-                <div className="space-y-3">
-                  {data.education.map((edu) => {
-                    const eduSubtitles = [
-                      ...[edu.degree, edu.gpaOrHonors].filter(Boolean),
-                      ...(edu.subtitles && edu.subtitles.length > 0 ? edu.subtitles : []),
-                      ...(edu.location ? [edu.location] : []),
-                    ];
-                    return (
-                      <div key={edu.id} className="break-inside-avoid page-break-inside-avoid">
-                        <SplitRow 
-                          left={<span className="font-bold text-[11pt]">{edu.institution}</span>} 
-                          right={<DateSpan start={edu.startDate} end={edu.endDate} />} 
-                        />
-                        {eduSubtitles.length > 0 && (
-                          <div className="text-[9.5pt] text-gray-500 mt-0.5 flex flex-wrap items-center">
-                            {eduSubtitles.map((sub, sIdx) => (
-                              <React.Fragment key={sIdx}>
-                                {sIdx > 0 && <CenteredDivider />}
-                                <span>{sub}</span>
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        )}
-                        {edu.bullets && edu.bullets.length > 0 && (
-                          <ul className="mt-1.5 list-disc pl-5 space-y-1">
-                            {edu.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                {bullet}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <SectionHeaderGroup title={t('education')}>
+                  {renderEdu(data.education[0])}
+                </SectionHeaderGroup>
+                {data.education.slice(1).map((edu) => (
+                  <div key={edu.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderEdu(edu)}
+                  </div>
+                ))}
               </section>
             );
-          
-          case 'experience':
+          }
+
+          case 'experience': {
             if (data.experience.length === 0) return null;
+            const renderExp = (exp: typeof data.experience[0]) => {
+              const subs = [exp.role, ...(exp.subtitles || []), exp.location].filter(Boolean) as string[];
+              return (
+                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <SplitRow
+                    left={
+                      <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
+                        {exp.company}
+                        {exp.link && (
+                          <span style={{ fontWeight: 'normal', marginLeft: '4px' }}>
+                            |{' '}{isUrl(exp.link) ? <InlineLink href={exp.link} /> : <span>{exp.link}</span>}
+                          </span>
+                        )}
+                      </span>
+                    }
+                    right={<DateSpan start={exp.startDate} end={exp.endDate} />}
+                  />
+                  <SubtitleRow items={subs} />
+                  <BulletList items={exp.bullets || []} />
+                </div>
+              );
+            };
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('experience')} />
-                <div className="space-y-4">
-                  {data.experience.map((exp) => {
-                    const expSubtitles = [
-                      ...[exp.role].filter(Boolean),
-                      ...(exp.subtitles && exp.subtitles.length > 0 ? exp.subtitles : []),
-                      ...(exp.location ? [exp.location] : []),
-                    ];
-                    return (
-                      <div key={exp.id} className="break-inside-avoid page-break-inside-avoid">
-                        <SplitRow 
-                            left={
-                                <span className="font-bold text-[11pt]">
-                                    {exp.company}
-                                    {exp.link && (
-                                        <span className="font-normal ml-1">
-                                            |{' '}
-                                            {isUrl(exp.link) ? (
-                                              <a
-                                                href={formatUrl(exp.link)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="underline decoration-1 underline-offset-2 hover:text-blue-600"
-                                              >
-                                                {lang === 'es' ? 'Sitio Web' : 'Website'}
-                                              </a>
-                                            ) : (
-                                              <span className="underline decoration-1 underline-offset-2">
-                                                {exp.link}
-                                              </span>
-                                            )}
-                                        </span>
-                                    )}
-                                </span>
-                            } 
-                            right={<DateSpan start={exp.startDate} end={exp.endDate} />} 
-                        />
-                        {expSubtitles.length > 0 && (
-                          <div className="text-[9.5pt] text-gray-500 mt-0.5 flex flex-wrap items-center">
-                            {expSubtitles.map((sub, sIdx) => (
-                              <React.Fragment key={sIdx}>
-                                {sIdx > 0 && <CenteredDivider />}
-                                <span>{sub}</span>
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        )}
-                        {exp.bullets && exp.bullets.length > 0 && (
-                          <ul className="mt-1.5 list-disc pl-5 space-y-1">
-                            {exp.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                {bullet}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <SectionHeaderGroup title={t('experience')}>
+                  {renderExp(data.experience[0])}
+                </SectionHeaderGroup>
+                {data.experience.slice(1).map((exp) => (
+                  <div key={exp.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '10px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderExp(exp)}
+                  </div>
+                ))}
               </section>
             );
+          }
 
-          case 'projects':
+          case 'projects': {
             if (data.projects.length === 0) return null;
+            const renderProj = (proj: typeof data.projects[0]) => {
+              const subs = [...(proj.subtitles || []), proj.technologies, proj.location].filter(Boolean) as string[];
+              return (
+                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <SplitRow
+                    left={
+                      <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
+                        {proj.name}
+                        {proj.link && (
+                          <span style={{ fontWeight: 'normal', marginLeft: '4px' }}>
+                            |{' '}{isUrl(proj.link) ? <InlineLink href={proj.link} /> : <span>{proj.link}</span>}
+                          </span>
+                        )}
+                      </span>
+                    }
+                    right={<DateSpan start={proj.startDate} end={proj.endDate} />}
+                  />
+                  <SubtitleRow items={subs} />
+                  <BulletList items={proj.description || []} />
+                </div>
+              );
+            };
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('projects')} />
-                <div className="space-y-3">
-                  {data.projects.map((proj) => {
-                    const projSubtitles = [
-                      ...(proj.subtitles && proj.subtitles.length > 0 ? proj.subtitles : []),
-                      ...[proj.technologies].filter(Boolean),
-                      ...(proj.location ? [proj.location] : []),
-                    ];
-                    return (
-                      <div key={proj.id} className="break-inside-avoid page-break-inside-avoid">
-                         <SplitRow 
-                            left={
-                                <span className="font-bold text-[11pt]">
-                                    {proj.name}
-                                    {proj.link && (
-                                        <span className="font-normal ml-1">
-                                            |{' '}
-                                            {isUrl(proj.link) ? (
-                                              <a
-                                                href={formatUrl(proj.link)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="underline decoration-1 underline-offset-2 hover:text-blue-600"
-                                              >
-                                                {lang === 'es' ? 'Sitio Web' : 'Website'}
-                                              </a>
-                                            ) : (
-                                              <span className="underline decoration-1 underline-offset-2">
-                                                {proj.link}
-                                              </span>
-                                            )}
-                                        </span>
-                                    )}
-                                </span>
-                            } 
-                            right={<DateSpan start={proj.startDate} end={proj.endDate} />} 
-                        />
-                        {projSubtitles.length > 0 && (
-                          <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
-                            {projSubtitles.map((sub, sIdx) => (
-                              <React.Fragment key={sIdx}>
-                                {sIdx > 0 && <CenteredDivider />}
-                                <span>{sub}</span>
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        )}
-                        {proj.description && proj.description.length > 0 && (
-                          <ul className="mt-1 list-disc pl-5 space-y-1.5">
-                            {proj.description.map((desc, idx) => (
-                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                {desc}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                <SectionHeaderGroup title={t('projects')}>
+                  {renderProj(data.projects[0])}
+                </SectionHeaderGroup>
+                {data.projects.slice(1).map((proj) => (
+                  <div key={proj.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderProj(proj)}
+                  </div>
+                ))}
               </section>
             );
+          }
 
-          case 'certifications':
+          case 'certifications': {
             if (!data.certifications || data.certifications.length === 0) return null;
+            const renderCert = (cert: typeof data.certifications[0]) => (
+              <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                <SplitRow
+                  left={<span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{cert.name}</span>}
+                  right={<DateSpan start={cert.startDate} end={cert.endDate} />}
+                />
+                {(cert.issuer || cert.link) && (
+                  <div style={{ fontSize: '9.5pt', color: '#6b7280', marginTop: '2px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {cert.issuer && <span>{cert.issuer}</span>}
+                    {cert.issuer && cert.link && <CenteredDivider />}
+                    {cert.link && (
+                      isUrl(cert.link)
+                        ? <a href={formatUrl(cert.link)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>{t('certLink')}</a>
+                        : <span>{cert.link}</span>
+                    )}
+                  </div>
+                )}
+                <BulletList items={cert.bullets || []} />
+              </div>
+            );
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('certifications')} />
-                <div className="space-y-3">
-                   {data.certifications.map((cert) => (
-                     <div key={cert.id} className="break-inside-avoid page-break-inside-avoid">
-                        <SplitRow 
-                          left={
-                              <span className="font-bold text-[11pt]">
-                                 {cert.name}
-                              </span>
-                          }
-                          right={<DateSpan start={cert.startDate} end={cert.endDate} />}
-                        />
-                        {(cert.issuer || cert.link) && (
-                          <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
-                            {cert.issuer && <span>{cert.issuer}</span>}
-                            {cert.issuer && cert.link && <CenteredDivider />}
-                            {cert.link && (
-                              isUrl(cert.link) ? (
-                                <a 
-                                  href={formatUrl(cert.link)} 
-                                  target="_blank" 
-                                  rel="noreferrer" 
-                                  className="underline decoration-1 underline-offset-2 hover:text-blue-600"
-                                >
-                                  {t('certLink')}
-                                </a>
-                              ) : (
-                                <span>{cert.link}</span>
-                              )
-                            )}
-                          </div>
-                        )}
-                        {cert.bullets && cert.bullets.length > 0 && (
-                          <ul className="mt-1.5 list-disc pl-5 space-y-1.5">
-                            {cert.bullets.map((bullet, idx) => (
-                              <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                {bullet}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                     </div>
-                   ))}
-                </div>
+                <SectionHeaderGroup title={t('certifications')}>
+                  {renderCert(data.certifications[0])}
+                </SectionHeaderGroup>
+                {data.certifications.slice(1).map((cert) => (
+                  <div key={cert.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderCert(cert)}
+                  </div>
+                ))}
               </section>
             );
+          }
 
-          case 'skills':
+          case 'skills': {
             if (data.skills.length === 0) return null;
+            const renderSkill = (skill: SkillItem) => (
+              <div style={{ marginBottom: '5px' }}>
+                {skill.category && (
+                  <div style={{ fontWeight: 'bold', fontSize: '10pt', lineHeight: 1.2 }}>{skill.category}</div>
+                )}
+                <div style={{ fontSize: '9.5pt', lineHeight: 1.35, color: '#111111' }}>{skill.items}</div>
+                <BulletList items={skill.bullets || []} />
+              </div>
+            );
             return (
               <section key={sectionId}>
-                  {data.skills.map((skill) => (
-                      <div key={skill.id} className="mt-3 break-inside-avoid page-break-inside-avoid">
-                          <h3 className="font-bold text-[11pt] border-b border-black inline-block mb-1" style={{ borderBottomWidth: '0.5px' }}>{skill.category}</h3>
-                          <div>{skill.items}</div>
-                          {skill.bullets && skill.bullets.length > 0 && (
-                            <ul className="mt-1.5 list-disc pl-5 space-y-1">
-                              {skill.bullets.map((bullet, idx) => (
-                                <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                  {bullet}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                      </div>
-                  ))}
+                <SectionHeaderGroup title={t('skills')}>
+                  {renderSkill(data.skills[0])}
+                </SectionHeaderGroup>
+                {data.skills.slice(1).map((skill) => (
+                  <div key={skill.id} className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderSkill(skill)}
+                  </div>
+                ))}
               </section>
             );
+          }
 
-          case 'workshops':
+          case 'workshops': {
             if (!data.workshops || data.workshops.length === 0) return null;
+            const renderWs = (ws: WorkshopItem) => {
+              const subs = [ws.organizer, ...(ws.subtitles || []), (ws.location && !/^\s*(remoto|remote)\s*$/i.test(ws.location) ? ws.location : '')].filter(Boolean) as string[];
+              return (
+                <div className="break-inside-avoid" style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                  <SplitRow
+                    left={
+                      <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>
+                        {ws.name}
+                        {ws.link && (
+                          <span style={{ fontWeight: 'normal', marginLeft: '4px' }}>
+                            |{' '}{isUrl(ws.link) ? <InlineLink href={ws.link} /> : <span>{ws.link}</span>}
+                          </span>
+                        )}
+                      </span>
+                    }
+                    right={<DateSpan start={ws.startDate} end={ws.endDate} />}
+                  />
+                  <SubtitleRow items={subs} />
+                  <BulletList items={ws.bullets || []} />
+                </div>
+              );
+            };
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('workshops')} />
-                <div className="space-y-3">
-                   {data.workshops.map((ws) => {
-                     const wsSubtitles = [
-                       ...[ws.organizer].filter(Boolean),
-                       ...(ws.subtitles && ws.subtitles.length > 0 ? ws.subtitles : []),
-                       // hide 'Remoto' / 'Remote' from display
-                       ...(ws.location && !/^\s*(remoto|remote)\s*$/i.test(ws.location) ? [ws.location] : []),
-                       ...(ws.link ? [ws.link] : []),
-                     ];
-                     return (
-                       <div key={ws.id} className="break-inside-avoid page-break-inside-avoid">
-                          <SplitRow 
-                            left={
-                                <span className="font-bold text-[11pt]">
-                                   {ws.name}
-                                </span>
-                            }
-                            right={<DateSpan start={ws.startDate} end={ws.endDate} />}
-                          />
-                          {wsSubtitles.length > 0 && (
-                            <div className="text-[9.5pt] text-gray-500 mt-0.5 mb-1 flex flex-wrap items-center">
-                              {wsSubtitles.map((sub, sIdx) => (
-                                <React.Fragment key={sIdx}>
-                                  {sIdx > 0 && <CenteredDivider />}
-                                  <span>
-                                    {isUrl(sub) ? (
-                                      <a 
-                                        href={formatUrl(sub)} 
-                                        target="_blank" 
-                                        rel="noreferrer" 
-                                        className="underline decoration-1 underline-offset-2 hover:text-blue-600"
-                                      >
-                                        {sub}
-                                      </a>
-                                    ) : (
-                                      sub
-                                    )}
-                                  </span>
-                                </React.Fragment>
-                              ))}
-                            </div>
-                          )}
-                          {ws.bullets && ws.bullets.length > 0 && (
-                            <ul className="mt-1 list-disc pl-5 space-y-1.5">
-                              {ws.bullets.map((bullet, idx) => (
-                                <li key={idx} className="text-[9.5pt] text-black leading-relaxed">
-                                  {bullet}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                       </div>
-                     );
-                   })}
-                </div>
+                <SectionHeaderGroup title={t('workshops')}>
+                  {renderWs(data.workshops![0])}
+                </SectionHeaderGroup>
+                {data.workshops!.slice(1).map((ws) => (
+                  <div key={ws.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '8px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    {renderWs(ws)}
+                  </div>
+                ))}
               </section>
             );
+          }
 
-          case 'links':
+          case 'links': {
             if (!data.links || data.links.length === 0) return null;
             return (
               <section key={sectionId}>
-                <SectionHeader title={t('links')} />
-                <div className="space-y-2">
-                   {data.links.map((link) => (
-                     <div key={link.id} className="break-inside-avoid page-break-inside-avoid">
-                        <span className="font-bold text-[11pt]">{link.label}</span>
-                        {link.url && (
-                          <div className="text-sm">
-                            <a 
-                              href={formatUrl(link.url)} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="underline decoration-1 underline-offset-2 hover:text-blue-600"
-                            >
-                              {link.url}
-                            </a>
-                          </div>
-                        )}
-                     </div>
-                   ))}
-                </div>
+                <SectionHeaderGroup title={t('links')}>
+                  {data.links[0] && (
+                    <div style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{data.links[0].label}</span>
+                      {data.links[0].url && (
+                        <div style={{ fontSize: '9.5pt' }}>
+                          <a href={formatUrl(data.links[0].url)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            {data.links[0].url}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </SectionHeaderGroup>
+                {data.links.slice(1).map((link) => (
+                  <div key={link.id} className="break-inside-avoid page-break-inside-avoid" style={{ marginTop: '6px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{link.label}</span>
+                    {link.url && (
+                      <div style={{ fontSize: '9.5pt' }}>
+                        <a href={formatUrl(link.url)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                          {link.url}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </section>
             );
+          }
 
           default:
             return null;
         }
       })}
-
     </div>
   );
 };

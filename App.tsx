@@ -1,10 +1,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import ResumeCanvas from './components/ResumeCanvas';
+import PrintPreviewModal from './components/PrintPreviewModal';
 import Editor from './components/Editor';
 import { INITIAL_RESUME_DATA, EMPTY_RESUME_DATA } from './constants';
 import { ResumeData } from './types';
-import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown } from 'lucide-react';
+import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -16,6 +17,7 @@ const App: React.FC = () => {
   const [isCopied, setIsCopied] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocalManagerOpen, setIsLocalManagerOpen] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [savedResumesList, setSavedResumesList] = useState<{id: string, name: string, date: string, data: ResumeData}[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -172,7 +174,7 @@ const App: React.FC = () => {
 
       await html2pdfLib()
         .set({
-          margin: 0,
+          margin: [12, 0, 12, 0],
           filename: `${name}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
@@ -190,7 +192,7 @@ const App: React.FC = () => {
             orientation: 'portrait',
             compress: true,
           },
-          pagebreak: { mode: ['css', 'legacy'] },
+          pagebreak: { mode: ['css', 'legacy'], avoid: ['.section-header-group', '.break-inside-avoid', 'li'] },
         })
         .from(element)
         .save();
@@ -222,7 +224,34 @@ const App: React.FC = () => {
     const handleJSONContent = (text: string) => {
       try {
         const parsedData = JSON.parse(text);
-        
+
+        // Normalize languages: {name, proficiency, bullets} → {category, items, bullets}
+        if (Array.isArray(parsedData.languages)) {
+          parsedData.languages = parsedData.languages.map((lang: any) => {
+            if ('name' in lang) {
+              const level = lang.proficiency?.trim() ||
+                (Array.isArray(lang.bullets) && lang.bullets[0]?.trim()) || '';
+              const items = level ? `${lang.name.trim()} [${level}]` : lang.name.trim();
+              return { id: lang.id, category: '', items, bullets: [] };
+            }
+            return lang;
+          });
+        }
+
+        // If technicalSkills is absent but skills has items and the sectionOrder expects
+        // technicalSkills (not skills), promote skills → technicalSkills automatically
+        const order: string[] = parsedData.sectionOrder || [];
+        const wantsTech = order.includes('technicalSkills');
+        const wantsSkills = order.includes('skills');
+        if (
+          wantsTech && !wantsSkills &&
+          (!parsedData.technicalSkills || parsedData.technicalSkills.length === 0) &&
+          Array.isArray(parsedData.skills) && parsedData.skills.length > 0
+        ) {
+          parsedData.technicalSkills = parsedData.skills;
+          parsedData.skills = [];
+        }
+
         // Smart Merge Logic
         setResumeData(prev => ({
             ...prev,
@@ -440,6 +469,16 @@ const App: React.FC = () => {
                     <Globe size={16} className="mr-2" />
                     {lang === 'es' ? 'ES' : 'EN'}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsPrintPreviewOpen(true)}
+                  className="text-gray-300 hover:bg-white/10 hover:text-white"
+                  title={lang === 'es' ? 'Vista de Exportación' : 'Export Preview'}
+                >
+                  <Monitor size={16} className="mr-2" />
+                  {lang === 'es' ? 'Vista' : 'Preview'}
+                </Button>
                 <Button onClick={handleDownloadPDF} size="sm" disabled={isGeneratingPdf} className="bg-white text-black hover:bg-gray-200 font-semibold border-0 min-w-[150px]">
                     {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown size={16} className="mr-2" />}
                     {isGeneratingPdf ? t('generating') : t('downloadPdf')}
@@ -449,8 +488,23 @@ const App: React.FC = () => {
 
         {/* The Resume Paper Wrapper - Scrollable */}
         <div className="flex-1 overflow-y-auto p-8 pb-20 flex justify-center custom-scrollbar scroll-area print:p-0 print:overflow-visible">
-            <div className="w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top">
+            <div className="relative w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top">
               <ResumeCanvas data={resumeData} />
+              {/* Page-break indicator overlay — only visible in preview, not captured by html2pdf */}
+              <div
+                className="absolute inset-0 pointer-events-none no-print"
+                style={{
+                  /* Line at 273mm = 297mm page − 12mm top margin − 12mm bottom margin */
+                  backgroundImage: `repeating-linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent calc(273mm - 1px),
+                    rgba(99, 102, 241, 0.5) calc(273mm - 1px),
+                    rgba(99, 102, 241, 0.5) 273mm
+                  )`,
+                  zIndex: 10,
+                }}
+              />
             </div>
         </div>
 
@@ -483,6 +537,16 @@ const App: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Print Preview Modal */}
+      {isPrintPreviewOpen && (
+        <PrintPreviewModal
+          data={resumeData}
+          onClose={() => setIsPrintPreviewOpen(false)}
+          onDownload={handleDownloadPDF}
+          isDownloading={isGeneratingPdf}
+        />
+      )}
 
       {/* Local Manager Dialog */}
       <Dialog open={isLocalManagerOpen} onOpenChange={setIsLocalManagerOpen}>

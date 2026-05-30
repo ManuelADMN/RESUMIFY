@@ -34,6 +34,8 @@ const translations: Translations = {
     projects: 'Proyectos',
     certifications: 'Certificaciones',
     skills: 'Habilidades',
+    technicalSkills: 'Habilidades Técnicas',
+    languages: 'Idiomas',
     certLink: 'Ver Certificación',
 
     // Editor General
@@ -97,6 +99,14 @@ const translations: Translations = {
     itemsList: 'Elementos',
     itemsPlace: 'Ej. Español, Inglés, Francés',
 
+    // Technical Skills
+    techCatPlace: 'Ej. Tecnologías, Herramientas, Frameworks',
+    techItemsPlace: 'Ej. JavaScript, TypeScript, React, Docker',
+
+    // Languages
+    langCatPlace: 'Ej. Idiomas (opcional)',
+    langItemsPlace: 'Ej. Español [Nativo], Inglés [Intermedio]',
+
     // Workshops
     workshops: 'Talleres / Conferencias',
     workshopName: 'Nombre del Taller / Conferencia',
@@ -143,6 +153,8 @@ const translations: Translations = {
     projects: 'Projects',
     certifications: 'Certifications',
     skills: 'Skills',
+    technicalSkills: 'Technical Skills',
+    languages: 'Languages',
     certLink: 'View Certification',
 
     // Editor General
@@ -205,6 +217,14 @@ const translations: Translations = {
     catPlace: 'e.g. Languages, Tools, Frameworks',
     itemsList: 'Items',
     itemsPlace: 'e.g. Spanish, English, French',
+
+    // Technical Skills
+    techCatPlace: 'e.g. Technologies, Tools, Frameworks',
+    techItemsPlace: 'e.g. JavaScript, TypeScript, React, Docker',
+
+    // Languages
+    langCatPlace: 'e.g. Languages (optional)',
+    langItemsPlace: 'e.g. Spanish [Native], English [Intermediate]',
 
     // Workshops
     workshops: 'Workshops / Conferences',

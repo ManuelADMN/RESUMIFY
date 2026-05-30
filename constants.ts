@@ -2,7 +2,7 @@
 import { ResumeData } from './types';
 
 export const INITIAL_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'links'],
+  sectionOrder: ['technicalSkills', 'education', 'experience', 'projects', 'certifications', 'skills', 'languages', 'workshops', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "Juan Pérez",
@@ -78,22 +78,26 @@ export const INITIAL_RESUME_DATA: ResumeData = {
       date: "Nov 2022"
     }
   ],
-  skills: [
+  technicalSkills: [
     {
-      id: "skill-1",
-      category: "Idiomas",
-      items: "Español [Nativo], Inglés [Intermedio]"
-    },
-    {
-      id: "skill-2",
+      id: "tskill-1",
       category: "Tecnologías",
       items: "JavaScript, TypeScript, React, Node.js, Python, SQL, HTML5, CSS3"
     },
     {
-      id: "skill-3",
+      id: "tskill-2",
       category: "Herramientas",
       items: "Git, Docker, VS Code, Figma, Jira"
-    },
+    }
+  ],
+  languages: [
+    {
+      id: "lang-1",
+      category: "Idiomas",
+      items: "Español [Nativo], Inglés [Intermedio]"
+    }
+  ],
+  skills: [
     {
       id: "skill-4",
       category: "Habilidades Blandas",
@@ -146,7 +150,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
 };
 
 export const EMPTY_RESUME_DATA: ResumeData = {
-  sectionOrder: ['education', 'experience', 'projects', 'certifications', 'skills', 'links'],
+  sectionOrder: ['technicalSkills', 'education', 'experience', 'projects', 'certifications', 'skills', 'languages', 'workshops', 'links'],
   hiddenSections: [],
   personalInfo: {
     fullName: "",
@@ -161,6 +165,8 @@ export const EMPTY_RESUME_DATA: ResumeData = {
   education: [],
   experience: [],
   projects: [],
+  technicalSkills: [],
+  languages: [],
   skills: [],
   certifications: [],
   workshops: [],
