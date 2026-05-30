@@ -195,59 +195,28 @@ const App: React.FC = () => {
   const handleDownloadPDF = async () => {
     if (isGeneratingPdf) return;
     setIsGeneratingPdf(true);
-
     try {
-      const element = document.getElementById('resume-canvas');
-      if (!element) throw new Error('Canvas not found');
-
-      const html2pdfLib = (window as any).html2pdf;
-      if (typeof html2pdfLib !== 'function') throw new Error('html2pdf not loaded');
-
-      const scrollArea = document.querySelector('.scroll-area') as HTMLElement | null;
-      const savedScroll = scrollArea?.scrollTop ?? 0;
-      if (scrollArea) scrollArea.scrollTop = 0;
-
-      // Zero the preview-only spacer so html2pdf's page-break algorithm
-      // sees element positions identical to the rendered PDF (no 12mm offset).
-      const spacerEl = element.querySelector('[data-html2canvas-ignore]') as HTMLElement | null;
-      if (spacerEl) spacerEl.style.height = '0';
-      await new Promise(r => setTimeout(r, 60));
-
+      // Lazy-load react-pdf to keep initial bundle small
+      const [{ pdf }, { default: ResumePDFDocument }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('./components/ResumePDFDocument'),
+      ]);
       const name = resumeData.personalInfo.fullName.trim().replace(/\s+/g, '_') || 'CV';
-
-      await html2pdfLib()
-        .set({
-          margin: [12, 0, 12, 0],
-          filename: `${name}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 3,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            scrollX: 0,
-            scrollY: 0,
-          },
-          jsPDF: {
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'portrait',
-            compress: true,
-          },
-          pagebreak: { mode: ['css', 'legacy'], avoid: ['.section-header-group', '.break-inside-avoid', 'li'] },
-        })
-        .from(element)
-        .save();
-
-      if (scrollArea) scrollArea.scrollTop = savedScroll;
+      const blob = await pdf(
+        React.createElement(ResumePDFDocument, { data: resumeData, lang })
+      ).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('PDF export failed', error);
       alert(t('pdfError'));
     } finally {
-      // Always restore the preview spacer height
-      const spacerRestore = document.querySelector('#resume-canvas [data-html2canvas-ignore]') as HTMLElement | null;
-      if (spacerRestore) spacerRestore.style.height = '12mm';
       setIsGeneratingPdf(false);
     }
   };
@@ -546,34 +515,8 @@ const App: React.FC = () => {
 
         {/* The Resume Paper Wrapper - Scrollable */}
         <div className="flex-1 overflow-y-auto p-8 pb-20 flex justify-center custom-scrollbar scroll-area print:p-0 print:overflow-visible">
-            <div className="relative w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top">
+            <div className="w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top">
               <ResumeCanvas data={resumeData} />
-              {/* Page-break indicator overlay — only visible in preview, not captured by html2pdf */}
-              <div
-                className="absolute inset-0 pointer-events-none no-print"
-                style={{
-                  /* Lines at 285mm, 558mm, 831mm …
-                     = 12mm (ignore-spacer) + N × 273mm (content per page).
-                     The spacer is skipped by html2canvas so PDF cuts at
-                     273mm intervals; HTML layout shifts those by +12mm. */
-                  backgroundImage: `linear-gradient(
-                    to bottom,
-                    transparent calc(285mm - 1px),
-                    rgba(99,102,241,0.55) calc(285mm - 1px),
-                    rgba(99,102,241,0.55) 285mm,
-                    transparent 285mm,
-                    transparent calc(558mm - 1px),
-                    rgba(99,102,241,0.55) calc(558mm - 1px),
-                    rgba(99,102,241,0.55) 558mm,
-                    transparent 558mm,
-                    transparent calc(831mm - 1px),
-                    rgba(99,102,241,0.55) calc(831mm - 1px),
-                    rgba(99,102,241,0.55) 831mm,
-                    transparent 831mm
-                  )`,
-                  zIndex: 10,
-                }}
-              />
             </div>
         </div>
 
@@ -616,6 +559,7 @@ const App: React.FC = () => {
       {isPrintPreviewOpen && (
         <PrintPreviewModal
           data={resumeData}
+          lang={lang}
           onClose={() => setIsPrintPreviewOpen(false)}
           onDownload={handleDownloadPDF}
           isDownloading={isGeneratingPdf}

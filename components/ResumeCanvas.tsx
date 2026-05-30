@@ -128,10 +128,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
       style={{
         width: '210mm',
         minHeight: '297mm',
-        /* top padding is 0 here; a data-html2canvas-ignore spacer provides
-           visual spacing in the HTML preview without being captured by html2canvas,
-           so the PDF margin [12,0,12,0] alone controls page-1 top space. */
-        padding: '0 12mm 14mm 12mm',
+        padding: '12mm 12mm 14mm 12mm',
         boxSizing: 'border-box',
         fontSize: '10pt',
         lineHeight: 1.1,
@@ -140,9 +137,6 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
         fontFamily: getFontFamily(data.font || 'Arial'),
       }}
     >
-      {/* Visual top spacer for HTML/print-preview — excluded from PDF capture */}
-      <div data-html2canvas-ignore="true" style={{ height: '12mm' }} />
-
       {/* Header */}
       <header style={{ textAlign: 'center', marginBottom: '8px' }}>
         <h1 style={{ fontWeight: 'bold', marginBottom: '10px', color: 'black', fontSize: '22pt', lineHeight: 1.05 }}>
