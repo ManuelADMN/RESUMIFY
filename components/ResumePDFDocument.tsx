@@ -158,7 +158,7 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
   );
 
   return (
-    <Document>
+    <Document hyphenationCallback={(word) => [word]}>
       <Page size="A4" style={[s.page, { fontFamily: regular }]}>
 
         {/* ─── Header ─────────────────────────────────────────────────── */}
