@@ -10,6 +10,35 @@ import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHo
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
+interface SavedResume {
+  id: string;
+  name: string;
+  fileName: string;
+  date: string;
+  data: ResumeData;
+}
+
+const toPdfFileName = (value: string, data: ResumeData) => {
+  const fallback = data.personalInfo?.fullName?.trim() || 'CV';
+  const base = (value.trim() || fallback)
+    .replace(/\.pdf$/i, '')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '')
+    .trim();
+  return `${base || 'CV'}.pdf`;
+};
+
+const normalizeSavedResume = (item: any, index: number): SavedResume | null => {
+  if (!item?.data) return null;
+  const name = String(item.name || item.fileName || item.filename || item.title || item.data.personalInfo?.fullName || `CV ${index + 1}`);
+  return {
+    id: String(item.id || `legacy-${index}`),
+    name: name.replace(/\.pdf$/i, ''),
+    fileName: toPdfFileName(String(item.fileName || item.filename || name), item.data),
+    date: String(item.date || ''),
+    data: item.data,
+  };
+};
+
 const App: React.FC = () => {
   const { lang, t, toggleLanguage } = useLanguage();
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME_DATA);
@@ -20,7 +49,7 @@ const App: React.FC = () => {
   const [isLocalManagerOpen, setIsLocalManagerOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isTestingOpen, setIsTestingOpen] = useState(false);
-  const [savedResumesList, setSavedResumesList] = useState<{id: string, name: string, date: string, data: ResumeData}[]>([]);
+  const [savedResumesList, setSavedResumesList] = useState<SavedResume[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -321,7 +350,11 @@ const App: React.FC = () => {
     try {
       const stored = localStorage.getItem('resumify_saved_cvs');
       if (stored) {
-        setSavedResumesList(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        const normalized = Array.isArray(parsed)
+          ? parsed.map(normalizeSavedResume).filter((item): item is SavedResume => item !== null)
+          : [];
+        setSavedResumesList(normalized);
       } else {
         setSavedResumesList([]);
       }
@@ -343,6 +376,7 @@ const App: React.FC = () => {
       const newResume = {
         id: Date.now().toString(),
         name: versionName,
+        fileName: toPdfFileName(versionName, resumeData),
         date: new Date().toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
         data: resumeData
       };
@@ -581,7 +615,7 @@ const App: React.FC = () => {
                 {savedResumesList.map((item) => (
                   <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-lg bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
                     <div className="mb-3 sm:mb-0">
-                      <h4 className="font-medium text-white mb-1">{item.name}</h4>
+                      <h4 className="font-medium text-white mb-1 break-all" title={item.fileName}>{item.fileName}</h4>
                       <p className="text-xs text-gray-400">{item.date}</p>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { X, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { buildATSPlainText, normalizeATSInline } from '../utils/atsResume';
 
 interface TestResult {
   id: string;
@@ -117,15 +118,39 @@ function runTests(data: ResumeData): TestResult[] {
     validFonts.includes(data.font || 'Arial'),
     `Font: "${data.font || 'Arial'}"`);
 
-  // ── PDF Export readiness ───────────────────────────────────────────────
+  // ── ATS / PDF Export readiness ─────────────────────────────────────────
   push('pdf-canvas', 'PDF Export', 'Canvas element exists in DOM',
     !!document.getElementById('resume-canvas'),
     document.getElementById('resume-canvas') ? '#resume-canvas found' : '#resume-canvas not found');
 
-  const h2pdfLoaded = typeof (window as any).html2pdf === 'function';
-  push('pdf-lib', 'PDF Export', 'html2pdf library loaded',
-    h2pdfLoaded,
-    h2pdfLoaded ? 'Library ready' : 'html2pdf not loaded — check index.html script tag');
+  const atsText = buildATSPlainText(data, document.documentElement.lang || 'en');
+  const atsLines = atsText.split('\n').filter(Boolean);
+  push('ats-text', 'ATS Readiness', 'Canonical ATS text can be generated',
+    atsText.length > 50 && atsLines.length >= 3,
+    `${atsText.length} chars across ${atsLines.length} semantic lines`);
+
+  const hasInvisibleBreaks = /[\u00AD\u200B-\u200D\uFEFF]/.test(atsText);
+  push('ats-hidden-chars', 'ATS Readiness', 'No invisible hyphens or break characters',
+    !hasInvisibleBreaks,
+    hasInvisibleBreaks ? 'Invisible break characters detected' : 'Text layer is clean');
+
+  const primaryEntries = [
+    ...data.education.map(item => item.institution),
+    ...data.experience.map(item => item.company),
+    ...data.projects.map(item => item.name),
+    ...(data.certifications ?? []).map(item => item.name),
+    ...(data.workshops ?? []).map(item => item.name),
+  ].map(normalizeATSInline).filter(Boolean);
+  const missingEntries = primaryEntries.filter(value => !atsLines.includes(value));
+  push('ats-context', 'ATS Readiness', 'Every entry has its own context line',
+    missingEntries.length === 0,
+    missingEntries.length ? `Missing: ${missingEntries.join(', ')}` : `${primaryEntries.length} entries are independently readable`);
+
+  const visibleSections = (data.sectionOrder ?? []).filter(section => !(data.hiddenSections ?? []).includes(section));
+  const uniqueVisibleSections = new Set(visibleSections);
+  push('ats-order', 'ATS Readiness', 'Visible sections have a deterministic order',
+    visibleSections.length === uniqueVisibleSections.size,
+    `${visibleSections.length} ordered sections, ${uniqueVisibleSections.size} unique`);
 
   return results;
 }

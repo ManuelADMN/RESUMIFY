@@ -1,6 +1,9 @@
 import React from 'react';
 import { ResumeData, SkillItem, WorkshopItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import {
+  DEFAULT_SECTION_ORDER, formatATSDate, normalizeATSInline,
+} from '../utils/atsResume';
 
 interface ResumeCanvasProps {
   data: ResumeData;
@@ -32,12 +35,8 @@ const SectionHeaderGroup: React.FC<{ title: string; children: React.ReactNode }>
   </div>
 );
 
-const CenteredDivider: React.FC = () => (
-  <span style={{ margin: '0 7px', color: '#9ca3af', fontSize: '10pt', verticalAlign: 'middle' }}>&middot;</span>
-);
-
 const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
 
   const isUrl = (text: string) =>
     text.startsWith('http') || text.startsWith('www') || text.includes('.com') || text.includes('.cl') || text.includes('.dev');
@@ -48,24 +47,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     return text;
   };
 
-  const formatContactLink = (field: 'linkedin' | 'github' | 'website', value: string) => {
-    const clean = value.trim().replace(/^https?:\/\/(www\.)?/, '').replace(/^www\./, '');
-    if (field === 'linkedin') {
-      const u = clean.replace(/^linkedin\.com\/in\//, '').replace(/^\/in\//, '').replace(/^@/, '');
-      return { href: `https://linkedin.com/in/${u}` };
-    }
-    if (field === 'github') {
-      const u = clean.replace(/^github\.com\//, '').replace(/^@/, '');
-      return { href: `https://github.com/${u}` };
-    }
-    return { href: value.startsWith('http') ? value : `https://${value}` };
-  };
-
-  const linkLabel = lang === 'es' ? 'Enlace' : 'Link';
-
-  const DateSpan: React.FC<{ start?: string; end?: string }> = ({ start = '', end = '' }) => (
+  const DateSpan: React.FC<{ start?: string; end?: string; date?: string }> = ({ start, end, date }) => (
     <span style={{ color: '#666666', fontSize: '9pt', whiteSpace: 'nowrap' }}>
-      {start}{end ? ` - ${end}` : ''}
+      {formatATSDate(start, end, date)}
     </span>
   );
 
@@ -78,22 +62,17 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     <a href={formatUrl(href)} target="_blank" rel="noreferrer"
       style={{ color: 'inherit', textDecoration: 'none' }}>
       <span style={{ borderBottom: '0.5px solid currentColor', lineHeight: 1 }}>
-        {linkLabel}
+        {normalizeATSInline(href)}
       </span>
     </a>
   );
 
   const SubtitleRow: React.FC<{ items: (string | undefined)[] }> = ({ items }) => {
-    const valid = items.filter(Boolean) as string[];
+    const valid = items.map(normalizeATSInline).filter(Boolean) as string[];
     if (valid.length === 0) return null;
     return (
-      <div style={{ fontSize: '9.5pt', color: '#6b7280', marginTop: '2px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
-        {valid.map((sub, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <CenteredDivider />}
-            <span>{sub}</span>
-          </React.Fragment>
-        ))}
+      <div style={{ fontSize: '9.5pt', color: '#6b7280', marginTop: '2px', lineHeight: 1.3 }}>
+        {valid.join(' · ')}
       </div>
     );
   };
@@ -119,8 +98,12 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
     }
   };
 
-  const sectionOrder = data.sectionOrder || ['technicalSkills', 'education', 'experience', 'projects', 'certifications', 'skills', 'languages', 'workshops', 'links'];
+  const sectionOrder = data.sectionOrder?.length ? data.sectionOrder : DEFAULT_SECTION_ORDER;
   const hiddenSections = data.hiddenSections || [];
+  const contactItems = [
+    data.personalInfo.email, data.personalInfo.phone, data.personalInfo.location,
+    data.personalInfo.linkedin, data.personalInfo.github, data.personalInfo.website,
+  ].map(normalizeATSInline).filter(Boolean);
 
   return (
     <div
@@ -140,32 +123,10 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
       {/* Header */}
       <header style={{ textAlign: 'center', marginBottom: '8px' }}>
         <h1 style={{ fontWeight: 'bold', marginBottom: '10px', color: 'black', fontSize: '22pt', lineHeight: 1.05 }}>
-          {data.personalInfo.fullName}
+          {normalizeATSInline(data.personalInfo.fullName)}
         </h1>
-        <div style={{ fontSize: '9pt', display: 'flex', flexWrap: 'nowrap', justifyContent: 'center', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}>
-          {data.personalInfo.email && (
-            <a href={`mailto:${data.personalInfo.email}`} style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>
-              {data.personalInfo.email}
-            </a>
-          )}
-          {data.personalInfo.phone && (
-            <><span style={{ margin: '0 3px' }}>|</span><span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.phone}</span></>
-          )}
-          {data.personalInfo.location && (
-            <><span style={{ margin: '0 3px' }}>|</span><span style={{ whiteSpace: 'nowrap' }}>{data.personalInfo.location}</span></>
-          )}
-          {data.personalInfo.linkedin && (() => {
-            const { href } = formatContactLink('linkedin', data.personalInfo.linkedin);
-            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>LinkedIn</a></>;
-          })()}
-          {data.personalInfo.github && (() => {
-            const { href } = formatContactLink('github', data.personalInfo.github);
-            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>GitHub</a></>;
-          })()}
-          {data.personalInfo.website && (() => {
-            const { href } = formatContactLink('website', data.personalInfo.website);
-            return <><span style={{ margin: '0 3px' }}>|</span><a href={href} target="_blank" rel="noreferrer" style={{ whiteSpace: 'nowrap', textDecoration: 'none', color: 'inherit' }}>{linkLabel}</a></>;
-          })()}
+        <div style={{ fontSize: '9pt', textAlign: 'center', lineHeight: 1.35 }}>
+          {contactItems.join(' | ')}
         </div>
       </header>
 
@@ -178,7 +139,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
           {t('summary')}
         </h2>
         <p style={{ color: 'black', lineHeight: 1.35, margin: 0 }}>
-          {data.personalInfo.summary}
+          {normalizeATSInline(data.personalInfo.summary)}
         </p>
       </div>
 
@@ -315,7 +276,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         )}
                       </span>
                     }
-                    right={<DateSpan start={proj.startDate} end={proj.endDate} />}
+                    right={<DateSpan start={proj.startDate} end={proj.endDate} date={proj.date} />}
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={proj.description || []} />
@@ -342,19 +303,9 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
               <>
                 <SplitRow
                   left={<span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{cert.name}</span>}
-                  right={<DateSpan start={cert.startDate} end={cert.endDate} />}
+                  right={<DateSpan start={cert.startDate} end={cert.endDate} date={cert.date} />}
                 />
-                {(cert.issuer || cert.link) && (
-                  <div style={{ fontSize: '9.5pt', color: '#6b7280', marginTop: '2px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
-                    {cert.issuer && <span>{cert.issuer}</span>}
-                    {cert.issuer && cert.link && <CenteredDivider />}
-                    {cert.link && (
-                      isUrl(cert.link)
-                        ? <a href={formatUrl(cert.link)} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>{t('certLink')}</a>
-                        : <span>{cert.link}</span>
-                    )}
-                  </div>
-                )}
+                <SubtitleRow items={[cert.issuer, cert.link]} />
                 <BulletList items={cert.bullets || []} />
               </>
             );
@@ -414,7 +365,7 @@ const ResumeCanvas: React.FC<ResumeCanvasProps> = ({ data }) => {
                         )}
                       </span>
                     }
-                    right={<DateSpan start={ws.startDate} end={ws.endDate} />}
+                    right={<DateSpan start={ws.startDate} end={ws.endDate} date={ws.date} />}
                   />
                   <SubtitleRow items={subs} />
                   <BulletList items={ws.bullets || []} />

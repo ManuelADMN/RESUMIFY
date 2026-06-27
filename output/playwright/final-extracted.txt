@@ -1,0 +1,54 @@
+Juan Pérez
+juan@denoise.cl | +56 9 1234 5678 | Puerto Varas, Chile | linkedin.com/in/juanperez | github.com/juanperez | juanperez.dev
+SUMMARY
+Ingeniero de Software apasionado con más de 3 años de experiencia en el desarrollo de aplicaciones web escalables. 
+Especializado en el stack MERN y metodologías ágiles, con un fuerte enfoque en la calidad del código y la experiencia 
+del usuario. Busco oportunidades para aportar soluciones innovadoras en un entorno colaborativo.
+TECHNICAL SKILLS
+Tecnologías
+JavaScript, TypeScript, React, Node.js, Python, SQL, HTML5, CSS3
+Herramientas
+Git, Docker, VS Code, Figma, Jira
+EDUCATION
+Duoc UC Sede Puerto Montt Marzo 2018 - Diciembre 2022
+Ingeniería en Informática · Aprobado con Distinción · Puerto Montt, Chile
+EXPERIENCE
+Tech Solutions Sur | techsolutions.cl Ene 2023 - Presente
+Desarrollador Full Stack · Puerto Varas, Chile
+• Desarrollé y mantuve múltiples aplicaciones web utilizando React y Node.js, mejorando la eficiencia operativa de clientes 
+locales en un 30%.
+• Implementé pipelines de CI/CD con GitHub Actions, reduciendo el tiempo de despliegue en un 40%.
+• Colaboré estrechamente con equipos multidisciplinarios para diseñar arquitecturas de software robustas y escalables.
+Innovación Los Lagos Ene 2022 - Dic 2022
+Desarrollador Junior · Puerto Montt, Chile
+• Participé en la migración de sistemas legacy a arquitecturas modernas basadas en microservicios.
+• Optimicé consultas SQL complejas, logrando una reducción del 50% en los tiempos de carga de reportes críticos.
+PROJECTS
+Sistema de Gestión de Inventario | github.com/juanperez/inventario Jun 2023
+React, Firebase, Tailwind CSS
+• Aplicación web para el control de stock en tiempo real para pymes locales.
+• Implementación de autenticación segura y roles de usuario.
+Dashboard de Analítica Turística Nov 2022
+Python, Streamlit, Pandas
+• Herramienta de visualización de datos para analizar tendencias turísticas en la región de Los Lagos.
+• Integración con APIs públicas para obtener datos meteorológicos y de ocupación hotelera.
+CERTIFICATIONS
+AWS Certified Cloud Practitioner Ago 2023
+Amazon Web Services · aws.amazon.com/verification
+Scrum Master Certified (SMC) Mar 2023
+Scrum Alliance
+SKILLS
+Habilidades Blandas
+Trabajo en equipo, Resolución de problemas, Comunicación efectiva, Adaptabilidad
+
+LANGUAGES
+Idiomas
+Español [Nativo], Inglés [Intermedio]
+WORKSHOPS / CONFERENCES
+Taller de React 19 y Next.js | denoise.cl/workshops Nov 2024
+Denoise Academy
+• Aprendí patrones avanzados de React como Server Actions y Server Components.
+• Desarrollé una aplicación completa en producción utilizando Next.js App Router.
+LINKS
+Portafolio Personal: juanperez.dev
+LinkedIn Profesional: linkedin.com/in/juanperez

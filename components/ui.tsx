@@ -89,17 +89,26 @@ export const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) 
   );
 };
 
-export const DialogContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => (
-  <div
-    className={cn(
-      'bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 md:mx-0 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-gray-200',
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </div>
-);
+export const DialogContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
+  // `cn` is a plain concatenation, so a consumer-provided `bg-*` would NOT
+  // override the default `bg-white` (both classes end up applied and the CSS
+  // source order decides the winner). Only apply the white default when the
+  // consumer did not specify its own background, so dark dialogs keep their bg
+  // and white text stays readable.
+  const hasCustomBg = /(?:^|\s)bg-/.test(className ?? '');
+  return (
+    <div
+      className={cn(
+        hasCustomBg ? '' : 'bg-white',
+        'rounded-lg shadow-lg w-full max-w-lg mx-4 md:mx-0 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-gray-200',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
 
 export const DialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
   <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left px-6 py-4 border-b', className)} {...props} />

@@ -65,6 +65,7 @@ export interface ProjectItem {
   endDate?: string;
   location?: string;
   subtitles?: string[];
+  date?: string;
 }
 
 export interface CertificationItem {
@@ -75,6 +76,7 @@ export interface CertificationItem {
   endDate?: string;
   link?: string;
   bullets?: string[];
+  date?: string;
 }
 
 export interface WorkshopItem {
@@ -87,6 +89,7 @@ export interface WorkshopItem {
   link?: string;
   bullets?: string[];
   subtitles?: string[];
+  date?: string;
 }
 
 export interface LinkItem {

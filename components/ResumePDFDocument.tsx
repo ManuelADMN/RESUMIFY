@@ -1,8 +1,11 @@
 import React from 'react';
 import {
-  Document, Page, Text, View, Link, StyleSheet,
+  Document, Page, Text, View, Link, StyleSheet, Font,
 } from '@react-pdf/renderer';
 import { ResumeData, WorkshopItem } from '../types';
+import {
+  DEFAULT_SECTION_ORDER, formatATSDate, getATSLabel, normalizeATSInline,
+} from '../utils/atsResume';
 
 // ── Font mapping ──────────────────────────────────────────────────────────────
 // react-pdf ships Helvetica, Times-Roman and Courier as built-in PDF fonts.
@@ -14,6 +17,10 @@ const fontFamilies: Record<string, { regular: string; bold: string }> = {
 };
 const getFont = (name?: string) => fontFamilies[name || 'Arial'] ?? fontFamilies['Arial'];
 
+// ATS readers work with the PDF text layer. Prevent react-pdf from inserting
+// visual hyphens inside words, which otherwise become real characters there.
+Font.registerHyphenationCallback(word => [word]);
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 const s = StyleSheet.create({
   page: {
@@ -23,9 +30,7 @@ const s = StyleSheet.create({
   },
   // Header
   name:        { fontSize: 22, textAlign: 'center', marginBottom: 14 },
-  contactRow:  { flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap', fontSize: 9, marginBottom: 6 },
-  sep:         { marginHorizontal: 4, color: '#000000', fontSize: 9 },
-  contactLink: { color: '#000000', textDecoration: 'none', fontSize: 9 },
+  contactRow:  { textAlign: 'center', fontSize: 9, lineHeight: 1.35, marginBottom: 6 },
   divider:     { borderBottomWidth: 3, borderBottomColor: '#000000', marginTop: 8, marginBottom: 10 },
   // Summary
   summaryTitle: { fontSize: 13, textTransform: 'uppercase', marginBottom: 4 },
@@ -35,20 +40,15 @@ const s = StyleSheet.create({
   sectionTitle: { fontSize: 13, textTransform: 'uppercase' },
   // Entry
   splitRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  splitLeft:   { flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
-  splitRight:  { fontSize: 9, color: '#666666', marginLeft: 8, textAlign: 'right', whiteSpace: 'nowrap' },
+  splitLeft:   { flex: 1, fontSize: 11, marginRight: 8 },
+  splitRight:  { fontSize: 9, color: '#666666', textAlign: 'right' },
   entryTitle:  { fontSize: 11 },
-  pipe:        { fontSize: 10, marginHorizontal: 4 },
-  inlineLink:  { fontSize: 10, color: '#000000', textDecoration: 'underline' },
+  inlineLink:  { color: '#000000', textDecoration: 'underline' },
   // Subtitles
-  subtitleRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: 2, fontSize: 9.5, color: '#6b7280' },
-  subtitleDot: { marginHorizontal: 7, color: '#9ca3af', fontSize: 10 },
-  subtitleTxt: { fontSize: 9.5, color: '#6b7280' },
+  subtitleRow: { marginTop: 2, fontSize: 9.5, lineHeight: 1.3, color: '#4b5563' },
   // Bullets
   bulletList:  { marginTop: 4 },
-  bulletRow:   { flexDirection: 'row', marginTop: 1 },
-  bulletDot:   { width: 12, fontSize: 9.5 },
-  bulletText:  { flex: 1, fontSize: 9.5, lineHeight: 1.35 },
+  bulletText:  { marginTop: 1, marginLeft: 10, fontSize: 9.5, lineHeight: 1.35 },
   // Skills
   skillRow:    { marginBottom: 5 },
   skillCat:    { fontSize: 10, lineHeight: 1.2 },
@@ -58,56 +58,26 @@ const s = StyleSheet.create({
   expEntryGap: { marginTop: 10 },
 });
 
-// ── Tiny translations (no context — react-pdf runs its own reconciler) ────────
-const LABELS: Record<string, Record<string, string>> = {
-  es: {
-    summary: 'Resumen', education: 'Educación', experience: 'Experiencia',
-    projects: 'Proyectos', certifications: 'Certificaciones', skills: 'Habilidades',
-    technicalSkills: 'Habilidades Técnicas', languages: 'Idiomas',
-    workshops: 'Talleres / Conferencias', links: 'Enlaces',
-    certLink: 'Ver Certificación',
-  },
-  en: {
-    summary: 'Summary', education: 'Education', experience: 'Experience',
-    projects: 'Projects', certifications: 'Certifications', skills: 'Skills',
-    technicalSkills: 'Technical Skills', languages: 'Languages',
-    workshops: 'Workshops / Conferences', links: 'Links',
-    certLink: 'View Certification',
-  },
-};
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const isUrl = (v: string) => /^https?:\/\/|^www\.|[a-z]+\.[a-z]{2,}$/i.test(v);
+const isUrl = (v: string) => /^https?:\/\/|^www\.|[a-z]+\.[a-z]{2,}/i.test(v);
 const safeHref = (v: string) => (v.startsWith('http') ? v : `https://${v}`);
-const dateFmt = (a?: string, b?: string) => [a, b].filter(Boolean).join(' - ');
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const SubtitleRow: React.FC<{ items: (string | undefined | null)[] }> = ({ items }) => {
-  const valid = items.filter(Boolean) as string[];
+  const valid = items.map(normalizeATSInline).filter(Boolean) as string[];
   if (valid.length === 0) return null;
-  return (
-    <View style={s.subtitleRow}>
-      {valid.map((item, i) => (
-        <React.Fragment key={i}>
-          {i > 0 && <Text style={s.subtitleDot}>·</Text>}
-          <Text style={s.subtitleTxt}>{item}</Text>
-        </React.Fragment>
-      ))}
-    </View>
-  );
+  // A single Text node and explicit separators preserve spaces on extraction.
+  return <Text style={s.subtitleRow}>{valid.join(' · ')}</Text>;
 };
 
 const BulletList: React.FC<{ items: string[] }> = ({ items }) => {
-  const valid = items.filter(b => b.trim().length > 0);
+  const valid = items.map(normalizeATSInline).filter(Boolean);
   if (valid.length === 0) return null;
   return (
     <View style={s.bulletList}>
       {valid.map((b, i) => (
-        <View key={i} style={s.bulletRow}>
-          <Text style={s.bulletDot}>•</Text>
-          <Text style={s.bulletText}>{b}</Text>
-        </View>
+        <Text key={i} style={s.bulletText}>{`• ${b}`}</Text>
       ))}
     </View>
   );
@@ -119,74 +89,66 @@ interface Props { data: ResumeData; lang: string }
 
 const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
   const { regular, bold } = getFont(data.font);
-  const t = (k: string) => LABELS[lang]?.[k] ?? LABELS.en[k] ?? k;
-  const linkLabel = lang === 'es' ? 'Enlace' : 'Link';
-
-  const order  = data.sectionOrder  ?? ['technicalSkills','education','experience','projects','certifications','skills','languages','workshops','links'];
+  const t = (k: string) => getATSLabel(k, lang);
+  const order  = data.sectionOrder?.length ? data.sectionOrder : DEFAULT_SECTION_ORDER;
   const hidden = data.hiddenSections ?? [];
+  const contactItems = [
+    data.personalInfo.email,
+    data.personalInfo.phone,
+    data.personalInfo.location,
+    data.personalInfo.linkedin,
+    data.personalInfo.github,
+    data.personalInfo.website,
+  ].map(normalizeATSInline).filter(Boolean) as string[];
 
   // Section header
   const SH = ({ title }: { title: string }) => (
-    <View style={s.sectionBox}>
+    <View style={s.sectionBox} minPresenceAhead={30}>
       <Text style={[s.sectionTitle, { fontFamily: bold }]}>{title}</Text>
     </View>
   );
 
   // Title row: bold name + optional link on the left, date on the right
-  const EntryRow = ({ name, link, start, end }: { name: string; link?: string; start?: string; end?: string }) => (
+  const EntryRow = ({ name, link, start, end, date }: { name: string; link?: string; start?: string; end?: string; date?: string }) => (
     <View style={s.splitRow}>
-      <View style={s.splitLeft}>
-        <Text style={[s.entryTitle, { fontFamily: bold }]}>{name}</Text>
-        {link && isUrl(link) && (
-          <>
-            <Text style={[s.pipe, { fontFamily: regular }]}> | </Text>
-            <Link src={safeHref(link)} style={s.inlineLink}>{linkLabel}</Link>
-          </>
+      <Text style={[s.splitLeft, { fontFamily: regular }]}>
+        <Text style={{ fontFamily: bold }}>{normalizeATSInline(name)}</Text>
+        {normalizeATSInline(link) && (
+          isUrl(normalizeATSInline(link))
+            ? <Link src={safeHref(normalizeATSInline(link))} style={s.inlineLink}>{` | ${normalizeATSInline(link)}`}</Link>
+            : ` | ${normalizeATSInline(link)}`
         )}
-      </View>
-      <Text style={[s.splitRight, { fontFamily: regular }]}>{dateFmt(start, end)}</Text>
+      </Text>
+      <Text style={[s.splitRight, { fontFamily: regular }]}>{formatATSDate(start, end, date)}</Text>
     </View>
   );
 
   // Skill block: bold category then items below
   const SkillBlock = ({ skill }: { skill: { id: string; category: string; items: string; bullets?: string[] } }) => (
     <View style={s.skillRow}>
-      {skill.category ? <Text style={[s.skillCat, { fontFamily: bold }]}>{skill.category}</Text> : null}
-      <Text style={[s.skillItems, { fontFamily: regular }]}>{skill.items}</Text>
+      {normalizeATSInline(skill.category) && (
+        <Text style={[s.skillCat, { fontFamily: bold }]}>{normalizeATSInline(skill.category)}</Text>
+      )}
+      <Text style={[s.skillItems, { fontFamily: regular }]}>{normalizeATSInline(skill.items)}</Text>
       <BulletList items={skill.bullets ?? []} />
     </View>
   );
 
   return (
-    <Document hyphenationCallback={(word) => [word]}>
+    <Document
+      title={`${normalizeATSInline(data.personalInfo.fullName) || 'CV'} - CV`}
+      author={normalizeATSInline(data.personalInfo.fullName)}
+      subject="Curriculum Vitae"
+      keywords="curriculum vitae, resume, ATS"
+      creator="Resumify"
+      producer="Resumify"
+    >
       <Page size="A4" style={[s.page, { fontFamily: regular }]}>
 
         {/* ─── Header ─────────────────────────────────────────────────── */}
-        <Text style={[s.name, { fontFamily: bold }]}>{data.personalInfo.fullName}</Text>
+        <Text style={[s.name, { fontFamily: bold }]}>{normalizeATSInline(data.personalInfo.fullName)}</Text>
 
-        <View style={s.contactRow}>
-          {data.personalInfo.email && (
-            <Link src={`mailto:${data.personalInfo.email}`} style={s.contactLink}>{data.personalInfo.email}</Link>
-          )}
-          {data.personalInfo.phone && (
-            <><Text style={s.sep}>|</Text><Text>{data.personalInfo.phone}</Text></>
-          )}
-          {data.personalInfo.location && (
-            <><Text style={s.sep}>|</Text><Text>{data.personalInfo.location}</Text></>
-          )}
-          {data.personalInfo.linkedin && (() => {
-            const u = data.personalInfo.linkedin.replace(/.*linkedin\.com\/in\//, '').replace(/^@/, '').replace(/\/$/, '');
-            return <><Text style={s.sep}>|</Text><Link src={`https://linkedin.com/in/${u}`} style={s.contactLink}>LinkedIn</Link></>;
-          })()}
-          {data.personalInfo.github && (() => {
-            const u = data.personalInfo.github.replace(/.*github\.com\//, '').replace(/^@/, '').replace(/\/$/, '');
-            return <><Text style={s.sep}>|</Text><Link src={`https://github.com/${u}`} style={s.contactLink}>GitHub</Link></>;
-          })()}
-          {data.personalInfo.website && (
-            <><Text style={s.sep}>|</Text>
-            <Link src={safeHref(data.personalInfo.website)} style={s.contactLink}>{linkLabel}</Link></>
-          )}
-        </View>
+        {contactItems.length > 0 && <Text style={s.contactRow}>{contactItems.join(' | ')}</Text>}
 
         {/* ─── Divider ─────────────────────────────────────────────────── */}
         <View style={s.divider} />
@@ -195,7 +157,7 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
         {data.personalInfo.summary ? (
           <View>
             <Text style={[s.summaryTitle, { fontFamily: bold }]}>{t('summary')}</Text>
-            <Text style={[s.summaryText, { fontFamily: regular }]}>{data.personalInfo.summary}</Text>
+            <Text style={[s.summaryText, { fontFamily: regular }]}>{normalizeATSInline(data.personalInfo.summary)}</Text>
           </View>
         ) : null}
 
@@ -222,12 +184,7 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
               return (
                 <View key={id}>
                   <SH title={t('languages')} />
-                  {items.map(l => (
-                    <View key={l.id} style={{ marginBottom: 3 }}>
-                      {l.category ? <Text style={[s.skillCat, { fontFamily: bold }]}>{l.category}</Text> : null}
-                      <Text style={[s.skillItems, { fontFamily: regular }]}>{l.items}</Text>
-                    </View>
-                  ))}
+                  {items.map(l => <View key={l.id}><SkillBlock skill={l} /></View>)}
                 </View>
               );
             }
@@ -279,7 +236,7 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
                     const subs = [...(proj.subtitles ?? []), proj.technologies, proj.location].filter(Boolean) as string[];
                     return (
                       <View key={proj.id} style={i > 0 ? s.entryGap : {}} wrap={false}>
-                        <EntryRow name={proj.name} link={proj.link} start={proj.startDate} end={proj.endDate} />
+                        <EntryRow name={proj.name} link={proj.link} start={proj.startDate} end={proj.endDate} date={proj.date} />
                         <SubtitleRow items={subs} />
                         <BulletList items={proj.description ?? []} />
                       </View>
@@ -297,10 +254,10 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
                   <SH title={t('certifications')} />
                   {certs.map((cert, i) => (
                     <View key={cert.id} style={i > 0 ? s.entryGap : {}} wrap={false}>
-                      <EntryRow name={cert.name} start={cert.startDate} end={cert.endDate} />
+                      <EntryRow name={cert.name} start={cert.startDate} end={cert.endDate} date={cert.date} />
                       <SubtitleRow items={[
                         cert.issuer,
-                        cert.link && isUrl(cert.link) ? t('certLink') : cert.link,
+                        cert.link,
                       ]} />
                       <BulletList items={cert.bullets ?? []} />
                     </View>
@@ -337,7 +294,7 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
                     ].filter(Boolean) as string[];
                     return (
                       <View key={ws.id} style={i > 0 ? s.entryGap : {}} wrap={false}>
-                        <EntryRow name={ws.name} link={ws.link} start={ws.startDate} end={ws.endDate} />
+                        <EntryRow name={ws.name} link={ws.link} start={ws.startDate} end={ws.endDate} date={ws.date} />
                         <SubtitleRow items={subs} />
                         <BulletList items={ws.bullets ?? []} />
                       </View>
@@ -355,10 +312,12 @@ const ResumePDFDocument: React.FC<Props> = ({ data, lang }) => {
                   <SH title={t('links')} />
                   {links.map((lnk, i) => (
                     <View key={lnk.id} style={i > 0 ? { marginTop: 5 } : {}} wrap={false}>
-                      <Text style={[s.entryTitle, { fontFamily: bold }]}>{lnk.label}</Text>
                       {lnk.url && (
-                        <Link src={safeHref(lnk.url)} style={{ fontSize: 9.5, color: '#000000' }}>{lnk.url}</Link>
+                        <Link src={safeHref(lnk.url)} style={{ fontSize: 9.5, color: '#000000', textDecoration: 'none' }}>
+                          {`${lnk.label}: ${lnk.url}`}
+                        </Link>
                       )}
+                      {!lnk.url && <Text style={[s.entryTitle, { fontFamily: bold }]}>{lnk.label}</Text>}
                     </View>
                   ))}
                 </React.Fragment>
