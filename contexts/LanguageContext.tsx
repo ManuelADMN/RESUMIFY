@@ -32,6 +32,12 @@ const translations: Translations = {
     copied: '¡Copiado!',
     aiPromptTab: 'Prompt de ayuda',
     jsonTab: 'Estructura JSON',
+    followTitle: 'Antes de empezar',
+    followDesc: 'Resumify es un proyecto abierto de Denoise. Síguenos en LinkedIn para apoyar el proyecto y no perderte las novedades. ¡Solo te tomará un segundo!',
+    followCta: 'Seguir a Denoise en LinkedIn',
+    followContinue: 'Continuar al editor',
+    followHint: 'Pulsa "Seguir" para continuar.',
+    waiting: 'Esperando..',
     aiPromptDesc: 'Resumify funciona 100% en tu navegador y no se conecta a ningún servicio. Este es solo un texto de apoyo: puedes rellenar la estructura a mano o, si lo prefieres, usar por tu cuenta cualquier asistente de texto para generar el JSON y luego importarlo aquí con "Importar".',
 
     // Resume Sections
@@ -158,6 +164,12 @@ const translations: Translations = {
     copied: 'Copied!',
     aiPromptTab: 'Helper prompt',
     jsonTab: 'JSON structure',
+    followTitle: 'Before you start',
+    followDesc: 'Resumify is an open project by Denoise. Follow us on LinkedIn to support the project and stay up to date. It only takes a second!',
+    followCta: 'Follow Denoise on LinkedIn',
+    followContinue: 'Continue to the editor',
+    followHint: 'Tap "Follow" to continue.',
+    waiting: 'Waiting..',
     aiPromptDesc: 'Resumify runs entirely in your browser and does not connect to any service. This is just a helper text: fill in the structure by hand, or if you prefer, use any text assistant on your own to generate the JSON and then import it here with "Import".',
 
     // Resume Sections

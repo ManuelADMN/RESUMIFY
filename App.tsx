@@ -9,7 +9,10 @@ const PrintPreviewModal = lazy(() => import('./components/PrintPreviewModal'));
 const TestingPanel = lazy(() => import('./components/TestingPanel'));
 import { INITIAL_RESUME_DATA, EMPTY_RESUME_DATA } from './constants';
 import { ResumeData } from './types';
-import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor, FlaskConical } from 'lucide-react';
+import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor, FlaskConical, ExternalLink } from 'lucide-react';
+import { LinkedInMark, LinkedInGlyph } from './components/LinkedInIcon';
+
+const DENOISE_LINKEDIN_URL = 'https://www.linkedin.com/company/126953982';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -54,7 +57,31 @@ const App: React.FC = () => {
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isTestingOpen, setIsTestingOpen] = useState(false);
   const [savedResumesList, setSavedResumesList] = useState<SavedResume[]>([]);
+  const [showFollowGate, setShowFollowGate] = useState(false);
+  const [hasClickedFollow, setHasClickedFollow] = useState(false);
+  const [followReady, setFollowReady] = useState(false);
+  const waitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // First-visit gate: ask the user to follow Denoise on LinkedIn (once per browser).
+  useEffect(() => {
+    if (!localStorage.getItem('resumify_followed_linkedin')) {
+      setShowFollowGate(true);
+    }
+    return () => { if (waitTimerRef.current) clearTimeout(waitTimerRef.current); };
+  }, []);
+
+  const handleFollowClick = () => {
+    window.open(DENOISE_LINKEDIN_URL, '_blank', 'noopener,noreferrer');
+    if (hasClickedFollow) return; // don't restart the wait on repeat clicks
+    setHasClickedFollow(true);
+    waitTimerRef.current = setTimeout(() => setFollowReady(true), 20000);
+  };
+
+  const handleContinueFromGate = () => {
+    localStorage.setItem('resumify_followed_linkedin', 'true');
+    setShowFollowGate(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -447,6 +474,43 @@ My details:
   return (
     <div className="flex h-[100dvh] w-full flex-col md:flex-row overflow-hidden bg-[#0f172a] text-foreground font-sans app-container">
 
+      {/* First-visit gate: follow Denoise on LinkedIn */}
+      {showFollowGate && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm no-print">
+          <div className="w-full max-w-md rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#131f38] to-[#1e293b] border border-white/10 shadow-2xl p-6 sm:p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="mx-auto mb-5 w-fit">
+              <LinkedInMark size={56} className="rounded-xl shadow-lg" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-1">{t('followTitle')}</h2>
+            <p className="text-sm text-gray-400 leading-relaxed mb-6">{t('followDesc')}</p>
+
+            <button
+              onClick={handleFollowClick}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0A66C2] hover:bg-[#0959a8] text-white font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <LinkedInGlyph size={18} />
+              {t('followCta')}
+              <ExternalLink size={15} className="opacity-80" />
+            </button>
+
+            <button
+              onClick={handleContinueFromGate}
+              disabled={!followReady}
+              className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:cursor-not-allowed bg-white/10 text-white hover:bg-white/20 disabled:hover:bg-white/10"
+            >
+              {hasClickedFollow && !followReady ? (
+                <><LinkedInMark size={16} className="rounded animate-pulse" /> {t('waiting')}</>
+              ) : (
+                t('followContinue')
+              )}
+            </button>
+
+            {!hasClickedFollow && (
+              <p className="mt-3 text-xs text-gray-500">{t('followHint')}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Editor Panel (Left Sidebar) */}
       <div className="w-full md:w-[420px] flex-shrink-0 z-20 h-[45vh] md:h-full flex flex-col border-b md:border-b-0 md:border-r border-border bg-white md:rounded-r-xl shadow-2xl overflow-hidden print:hidden sidebar-panel no-print">

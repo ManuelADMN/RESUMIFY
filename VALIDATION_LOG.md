@@ -144,6 +144,15 @@ Se ejercitaron **exactamente las secciones que producen los 53 errores** (todos 
 
 **Validación (Playwright, desktop 1280 + móvil 390): 18/18 OK** — sin luz verde, copy-prompt honesto y sin nombres de servicios, sin overflow horizontal (desktop y móvil), botón PDF dentro del viewport móvil, select de fuente oculto en móvil, encabezado ATS sin `/`, PDF con texto real y secciones completas, bullet largo sin truncar, cero errores de consola. Script: `scratchpad/validate_adjust.py`.
 
+## Gate inicial "Seguir a Denoise en LinkedIn" (ronda 3)
+
+Se añadió un modal de bienvenida (primera visita, una vez por navegador vía `localStorage.resumify_followed_linkedin`) que pide seguir a Denoise en LinkedIn ([company/126953982](https://www.linkedin.com/company/126953982)):
+- Botón principal abre el LinkedIn real en una pestaña nueva (`noopener,noreferrer`).
+- El botón **Continuar al editor** está deshabilitado hasta pulsar *Seguir* (requisito honesto: en un sitio estático sin backend no se puede *verificar* el seguimiento, así que es por confianza).
+- Bilingüe (ES/EN), responsivo y con el mismo estilo slate del resto.
+
+**Validación (Playwright): 10/10 OK** — el gate aparece en primera visita, *Continuar* deshabilitado hasta seguir, el botón abre `linkedin.com/company/126953982`, *Continuar* se habilita y descarta el gate, persiste en `localStorage`, no reaparece al recargar, y cero errores de consola. Script: `scratchpad/validate_gate.py`.
+
 ## Cómo desplegar en Vercel
 
 1. Push de la rama.
