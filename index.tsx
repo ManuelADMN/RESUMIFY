@@ -1,5 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@fontsource-variable/inter';
+import '@fontsource/merriweather/400.css';
+import '@fontsource/merriweather/700.css';
+import './index.css';
 import App from './App';
 import { LanguageProvider } from './contexts/LanguageContext';
 

@@ -1,12 +1,18 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import ResumeCanvas from './components/ResumeCanvas';
-import PrintPreviewModal from './components/PrintPreviewModal';
-import TestingPanel from './components/TestingPanel';
 import Editor from './components/Editor';
+
+// Lazy-loaded so @react-pdf/renderer (pulled in by PrintPreviewModal) stays out
+// of the initial bundle and only loads when the preview/testing panel is opened.
+const PrintPreviewModal = lazy(() => import('./components/PrintPreviewModal'));
+const TestingPanel = lazy(() => import('./components/TestingPanel'));
 import { INITIAL_RESUME_DATA, EMPTY_RESUME_DATA } from './constants';
 import { ResumeData } from './types';
-import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor, FlaskConical } from 'lucide-react';
+import { Download, Upload, Github, FileJson, Loader2, Copy, Check, Globe, MoreHorizontal, Trash2, Save, FolderOpen, FileDown, Monitor, FlaskConical, ExternalLink } from 'lucide-react';
+import { LinkedInMark, LinkedInGlyph } from './components/LinkedInIcon';
+
+const DENOISE_LINKEDIN_URL = 'https://www.linkedin.com/company/126953982';
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './components/ui';
 import { useLanguage } from './contexts/LanguageContext';
 
@@ -44,13 +50,38 @@ const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME_DATA);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isPromptingOpen, setIsPromptingOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
+  const [promptTab, setPromptTab] = useState<'ai' | 'json'>('ai');
+  const [copiedTarget, setCopiedTarget] = useState<'ai' | 'json' | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLocalManagerOpen, setIsLocalManagerOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isTestingOpen, setIsTestingOpen] = useState(false);
   const [savedResumesList, setSavedResumesList] = useState<SavedResume[]>([]);
+  const [showFollowGate, setShowFollowGate] = useState(false);
+  const [hasClickedFollow, setHasClickedFollow] = useState(false);
+  const [followReady, setFollowReady] = useState(false);
+  const waitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // First-visit gate: ask the user to follow Denoise on LinkedIn (once per browser).
+  useEffect(() => {
+    if (!localStorage.getItem('resumify_followed_linkedin')) {
+      setShowFollowGate(true);
+    }
+    return () => { if (waitTimerRef.current) clearTimeout(waitTimerRef.current); };
+  }, []);
+
+  const handleFollowClick = () => {
+    window.open(DENOISE_LINKEDIN_URL, '_blank', 'noopener,noreferrer');
+    if (hasClickedFollow) return; // don't restart the wait on repeat clicks
+    setHasClickedFollow(true);
+    waitTimerRef.current = setTimeout(() => setFollowReady(true), 20000);
+  };
+
+  const handleContinueFromGate = () => {
+    localStorage.setItem('resumify_followed_linkedin', 'true');
+    setShowFollowGate(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -214,10 +245,40 @@ const App: React.FC = () => {
   ]
 }`;
 
-  const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(promptingGuide);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+  const aiPrompt = (lang === 'es'
+    ? `Eres un asistente experto en redacción de currículums ATS-friendly. A partir de mi información (más abajo), rellena EXACTAMENTE la siguiente estructura JSON de CV.
+
+Reglas:
+- Devuelve ÚNICAMENTE el JSON válido, sin texto adicional, sin explicaciones y sin bloques de código markdown.
+- Respeta todas las claves y el orden. No inventes datos: deja los campos como "" o los arrays como [] si no tienes esa información.
+- Mantén cada "id" como una cadena única.
+- En los "bullets" usa verbos de acción y logros medibles cuando sea posible.
+- Conserva "sectionOrder", "hiddenSections" y "font" tal cual, salvo que yo indique lo contrario.
+
+Estructura JSON a rellenar:
+${promptingGuide}
+
+Mi información:
+[Pega aquí tu experiencia, educación, habilidades, proyectos, etc.]`
+    : `You are an expert ATS-friendly resume writer. Using my details (below), fill in EXACTLY the following resume JSON structure.
+
+Rules:
+- Return ONLY valid JSON, with no extra text, no explanations and no markdown code fences.
+- Keep every key and the ordering. Do not invent data: leave fields as "" or arrays as [] when you don't have the information.
+- Keep each "id" as a unique string.
+- In "bullets" use action verbs and measurable achievements when possible.
+- Keep "sectionOrder", "hiddenSections" and "font" as-is unless I say otherwise.
+
+JSON structure to fill:
+${promptingGuide}
+
+My details:
+[Paste your experience, education, skills, projects, etc. here]`);
+
+  const handleCopy = (target: 'ai' | 'json') => {
+    navigator.clipboard.writeText(target === 'ai' ? aiPrompt : promptingGuide);
+    setCopiedTarget(target);
+    setTimeout(() => setCopiedTarget(null), 2000);
   };
 
 
@@ -255,10 +316,11 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${resumeData.personalInfo.fullName.replace(/\s+/g, '_') || 'cv'}_data.json`;
+    a.download = 'denoise_cv.json';
     a.click();
     URL.revokeObjectURL(url);
     setIsMenuOpen(false);
+    alert(t('exportedToDownloads'));
   };
 
   const handleImportJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -410,16 +472,53 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col md:flex-row overflow-hidden bg-[#0f172a] text-foreground font-sans app-container">
+    <div className="flex h-[100dvh] w-full flex-col md:flex-row overflow-hidden bg-[#0f172a] text-foreground font-sans app-container">
 
-      
+      {/* First-visit gate: follow Denoise on LinkedIn */}
+      {showFollowGate && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm no-print">
+          <div className="w-full max-w-md rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#131f38] to-[#1e293b] border border-white/10 shadow-2xl p-6 sm:p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+            <div className="mx-auto mb-5 w-fit">
+              <LinkedInMark size={56} className="rounded-xl shadow-lg" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-1">{t('followTitle')}</h2>
+            <p className="text-sm text-gray-400 leading-relaxed mb-6">{t('followDesc')}</p>
+
+            <button
+              onClick={handleFollowClick}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#0A66C2] hover:bg-[#0959a8] text-white font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <LinkedInGlyph size={18} />
+              {t('followCta')}
+              <ExternalLink size={15} className="opacity-80" />
+            </button>
+
+            <button
+              onClick={handleContinueFromGate}
+              disabled={!followReady}
+              className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:cursor-not-allowed bg-white/10 text-white hover:bg-white/20 disabled:hover:bg-white/10"
+            >
+              {hasClickedFollow && !followReady ? (
+                <><LinkedInMark size={16} className="rounded animate-pulse" /> {t('waiting')}</>
+              ) : (
+                t('followContinue')
+              )}
+            </button>
+
+            {!hasClickedFollow && (
+              <p className="mt-3 text-xs text-gray-500">{t('followHint')}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Editor Panel (Left Sidebar) */}
-      <div className="w-full md:w-[420px] flex-shrink-0 z-20 md:h-full flex flex-col border-r border-border bg-white rounded-r-xl shadow-2xl overflow-hidden print:hidden sidebar-panel no-print">
-        <div className="p-5 border-b border-border flex justify-between items-center bg-[#0f172a] text-white h-16">
+      <div className="w-full md:w-[420px] flex-shrink-0 z-20 h-[45vh] md:h-full flex flex-col border-b md:border-b-0 md:border-r border-border bg-white md:rounded-r-xl shadow-2xl overflow-hidden print:hidden sidebar-panel no-print">
+        <div className="px-5 border-b border-white/10 flex justify-between items-center bg-gradient-to-br from-[#0f172a] via-[#131f38] to-[#1e293b] text-white h-16">
           <div className="flex items-center gap-2">
             <span className="font-bold text-xl tracking-wide font-serif-custom">RESUMIFY</span>
           </div>
-           <a href="https://github.com/ManuelADMN" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
+           <a href="https://github.com/ManuelADMN" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50">
             <Github size={20} />
            </a>
         </div>
@@ -433,13 +532,13 @@ const App: React.FC = () => {
       {/* Main Preview Area */}
       <div className="flex-1 bg-zinc-900/50 overflow-hidden relative flex flex-col h-full preview-panel">
         
-        {/* Toolbar - Black to match Sidebar */}
-        <div className="w-full h-16 bg-[#0f172a] flex items-center justify-between px-6 border-b border-gray-800 shadow-sm z-20 shrink-0 print:hidden toolbar-panel no-print">
-            <div className="flex gap-2">
+        {/* Toolbar - matches the sidebar header gradient */}
+        <div className="w-full h-16 bg-gradient-to-r from-[#0f172a] via-[#131f38] to-[#0f172a] flex items-center justify-between px-3 md:px-6 border-b border-white/10 shadow-sm z-20 shrink-0 print:hidden toolbar-panel no-print">
+            <div className="hidden md:flex gap-2">
                 {/* Left toolbar items if any */}
             </div>
-            
-            <div className="flex gap-3 items-center">
+
+            <div className="flex gap-1.5 md:gap-3 items-center w-full md:w-auto justify-end">
                 <div className="relative" ref={menuRef}>
                   <Button 
                     variant="ghost" 
@@ -506,7 +605,8 @@ const App: React.FC = () => {
                 <select
                   value={resumeData.font || 'Arial'}
                   onChange={(e) => setResumeData({ ...resumeData, font: e.target.value })}
-                  className="bg-[#1e293b] border border-gray-700 text-gray-300 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:text-white font-medium cursor-pointer"
+                  title={lang === 'es' ? 'Fuente (todas ATS-friendly)' : 'Font (all ATS-friendly)'}
+                  className="hidden sm:block bg-[#1e293b] border border-gray-700 text-gray-300 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 hover:text-white font-medium cursor-pointer max-w-[170px]"
                 >
                   <option value="Arial">Arial ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
                   <option value="Calibri">Calibri ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
@@ -514,9 +614,9 @@ const App: React.FC = () => {
                   <option value="Times New Roman">Times New Roman ({lang === 'es' ? 'ATS-friendly' : 'ATS-friendly'})</option>
                 </select>
 
-                <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-gray-300 hover:bg-white/10 hover:text-white" title="Change Language">
-                    <Globe size={16} className="mr-2" />
-                    {lang === 'es' ? 'ES' : 'EN'}
+                <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-gray-300 hover:bg-white/10 hover:text-white px-2 sm:px-3" title="Change Language">
+                    <Globe size={16} className="sm:mr-2" />
+                    <span className="hidden sm:inline">{lang === 'es' ? 'ES' : 'EN'}</span>
                 </Button>
                 {/* Tests button — developer-only, hidden in production */}
                 {import.meta.env.DEV && (
@@ -534,22 +634,23 @@ const App: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsPrintPreviewOpen(true)}
-                  className="text-gray-300 hover:bg-white/10 hover:text-white"
+                  className="text-gray-300 hover:bg-white/10 hover:text-white px-2 sm:px-3"
                   title={lang === 'es' ? 'Vista de Exportación' : 'Export Preview'}
                 >
-                  <Monitor size={16} className="mr-2" />
-                  {lang === 'es' ? 'Vista' : 'Preview'}
+                  <Monitor size={16} className="sm:mr-2" />
+                  <span className="hidden sm:inline">{lang === 'es' ? 'Vista' : 'Preview'}</span>
                 </Button>
-                <Button onClick={handleDownloadPDF} size="sm" disabled={isGeneratingPdf} className="bg-white text-black hover:bg-gray-200 font-semibold border-0 min-w-[150px]">
-                    {isGeneratingPdf ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileDown size={16} className="mr-2" />}
-                    {isGeneratingPdf ? t('generating') : t('downloadPdf')}
+                <Button onClick={handleDownloadPDF} size="sm" disabled={isGeneratingPdf} className="bg-white text-black hover:bg-gray-200 font-semibold border-0 px-3 min-w-0 sm:min-w-[150px] shadow-lg shadow-black/20 hover:shadow-xl transition-all whitespace-nowrap">
+                    {isGeneratingPdf ? <Loader2 className="sm:mr-2 h-4 w-4 animate-spin" /> : <FileDown size={16} className="sm:mr-2" />}
+                    <span className="hidden sm:inline">{isGeneratingPdf ? t('generating') : t('downloadPdf')}</span>
+                    <span className="sm:hidden">PDF</span>
                 </Button>
             </div>
         </div>
 
-        {/* The Resume Paper Wrapper - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-8 pb-20 flex justify-center custom-scrollbar scroll-area print:p-0 print:overflow-visible">
-            <div className="w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top">
+        {/* The Resume Paper Wrapper - Scrollable (A4 is 210mm wide; allow horizontal pan on small screens) */}
+        <div className="flex-1 overflow-auto p-3 sm:p-8 pb-20 flex justify-start sm:justify-center custom-scrollbar scroll-area print:p-0 print:overflow-visible">
+            <div className="w-fit h-fit shadow-2xl print:shadow-none animate-in fade-in zoom-in-95 duration-500 origin-top mx-auto">
               <ResumeCanvas data={resumeData} />
             </div>
         </div>
@@ -558,27 +659,51 @@ const App: React.FC = () => {
 
       {/* Prompting Guide Dialog */}
       <Dialog open={isPromptingOpen} onOpenChange={setIsPromptingOpen}>
-        <DialogContent className="max-w-2xl bg-[#0f172a] text-white border-border">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl bg-[#0f172a] text-white border border-white/10 shadow-2xl">
+          <DialogHeader className="border-white/10">
             <DialogTitle className="text-xl">{t('promptingGuide')}</DialogTitle>
             <DialogClose onClick={() => setIsPromptingOpen(false)} className="text-gray-400 hover:text-white" />
           </DialogHeader>
-          <div className="p-6 pt-2">
-            <p className="text-gray-400 mb-4 text-sm">
-              {t('promptingDesc')}
-            </p>
-            <div className="relative">
-              <pre className="bg-[#020817] p-4 rounded-lg overflow-x-auto text-sm text-gray-300 custom-scrollbar max-h-[50vh]">
-                <code>{promptingGuide}</code>
-              </pre>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleCopyPrompt}
-                className="absolute top-2 right-2 bg-white/10 text-white hover:bg-white/20 border-0"
+          <div className="p-6 pt-4">
+            {/* Tabs */}
+            <div className="inline-flex items-center gap-1 p-1 mb-4 rounded-lg bg-white/5 border border-white/10">
+              <button
+                onClick={() => setPromptTab('ai')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  promptTab === 'ai' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                }`}
               >
-                {isCopied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
-              </Button>
+                {t('aiPromptTab')}
+              </button>
+              <button
+                onClick={() => setPromptTab('json')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  promptTab === 'json' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                {t('jsonTab')}
+              </button>
+            </div>
+
+            <p className="text-gray-400 mb-4 text-sm leading-relaxed">
+              {promptTab === 'ai' ? t('aiPromptDesc') : t('promptingDesc')}
+            </p>
+
+            <div>
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => handleCopy(promptTab)}
+                  aria-live="polite"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-white/10 text-white hover:bg-white/20 transition-colors"
+                >
+                  {copiedTarget === promptTab
+                    ? <><Check size={14} className="text-emerald-400" /> {t('copied')}</>
+                    : <><Copy size={14} /> {promptTab === 'ai' ? t('copyAiPrompt') : t('copyJsonOnly')}</>}
+                </button>
+              </div>
+              <pre className="bg-[#020817] p-4 rounded-lg overflow-auto text-sm text-gray-300 custom-scrollbar max-h-[46vh] ring-1 ring-white/10">
+                <code>{promptTab === 'ai' ? aiPrompt : promptingGuide}</code>
+              </pre>
             </div>
           </div>
         </DialogContent>
@@ -586,18 +711,22 @@ const App: React.FC = () => {
 
       {/* Testing Panel */}
       {isTestingOpen && (
-        <TestingPanel data={resumeData} onClose={() => setIsTestingOpen(false)} />
+        <Suspense fallback={null}>
+          <TestingPanel data={resumeData} onClose={() => setIsTestingOpen(false)} />
+        </Suspense>
       )}
 
       {/* Print Preview Modal */}
       {isPrintPreviewOpen && (
-        <PrintPreviewModal
-          data={resumeData}
-          lang={lang}
-          onClose={() => setIsPrintPreviewOpen(false)}
-          onDownload={handleDownloadPDF}
-          isDownloading={isGeneratingPdf}
-        />
+        <Suspense fallback={null}>
+          <PrintPreviewModal
+            data={resumeData}
+            lang={lang}
+            onClose={() => setIsPrintPreviewOpen(false)}
+            onDownload={handleDownloadPDF}
+            isDownloading={isGeneratingPdf}
+          />
+        </Suspense>
       )}
 
       {/* Local Manager Dialog */}

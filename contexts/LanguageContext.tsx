@@ -26,6 +26,19 @@ const translations: Translations = {
     load: 'Cargar',
     delete: 'Eliminar',
     versionSaved: '¡CV Guardado!',
+    exportedToDownloads: 'Tu CV se descargó como "denoise_cv.json" en la carpeta de Descargas de tu navegador.',
+    copyAiPrompt: 'Copiar prompt',
+    copyJsonOnly: 'Copiar solo JSON',
+    copied: '¡Copiado!',
+    aiPromptTab: 'Prompt de ayuda',
+    jsonTab: 'Estructura JSON',
+    followTitle: 'Antes de empezar',
+    followDesc: 'Resumify es un proyecto abierto de Denoise. Síguenos en LinkedIn para apoyar el proyecto y no perderte las novedades. ¡Solo te tomará un segundo!',
+    followCta: 'Seguir a Denoise en LinkedIn',
+    followContinue: 'Continuar al editor',
+    followHint: 'Pulsa "Seguir" para continuar.',
+    waiting: 'Esperando..',
+    aiPromptDesc: 'Resumify funciona 100% en tu navegador y no se conecta a ningún servicio. Este es solo un texto de apoyo: puedes rellenar la estructura a mano o, si lo prefieres, usar por tu cuenta cualquier asistente de texto para generar el JSON y luego importarlo aquí con "Importar".',
 
     // Resume Sections
     summary: 'Resumen',
@@ -108,7 +121,7 @@ const translations: Translations = {
     langItemsPlace: 'Ej. Español [Nativo], Inglés [Intermedio]',
 
     // Workshops
-    workshops: 'Talleres / Conferencias',
+    workshops: 'Talleres y Conferencias',
     workshopName: 'Nombre del Taller / Conferencia',
     organizer: 'Organizador / Institución',
     addWorkshop: '+ Añadir Taller/Conferencia',
@@ -145,6 +158,19 @@ const translations: Translations = {
     load: 'Load',
     delete: 'Delete',
     versionSaved: 'Resume Saved!',
+    exportedToDownloads: 'Your resume was downloaded as "denoise_cv.json" to your browser\'s Downloads folder.',
+    copyAiPrompt: 'Copy prompt',
+    copyJsonOnly: 'Copy JSON only',
+    copied: 'Copied!',
+    aiPromptTab: 'Helper prompt',
+    jsonTab: 'JSON structure',
+    followTitle: 'Before you start',
+    followDesc: 'Resumify is an open project by Denoise. Follow us on LinkedIn to support the project and stay up to date. It only takes a second!',
+    followCta: 'Follow Denoise on LinkedIn',
+    followContinue: 'Continue to the editor',
+    followHint: 'Tap "Follow" to continue.',
+    waiting: 'Waiting..',
+    aiPromptDesc: 'Resumify runs entirely in your browser and does not connect to any service. This is just a helper text: fill in the structure by hand, or if you prefer, use any text assistant on your own to generate the JSON and then import it here with "Import".',
 
     // Resume Sections
     summary: 'Summary',
@@ -227,7 +253,7 @@ const translations: Translations = {
     langItemsPlace: 'e.g. Spanish [Native], English [Intermediate]',
 
     // Workshops
-    workshops: 'Workshops / Conferences',
+    workshops: 'Workshops and Conferences',
     workshopName: 'Workshop / Conference Name',
     organizer: 'Organizer / Institution',
     addWorkshop: '+ Add Workshop/Conference',

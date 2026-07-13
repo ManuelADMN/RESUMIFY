@@ -1,6 +1,6 @@
 {
-  "name": "Constructor de CV ",
-  "description": "Un creador de currículums ATS-friendly, elegante y minimalista en español con asistencia de IA y exportación a PDF.",
+  "name": "Resumify",
+  "description": "Un creador de currículums ATS-friendly, elegante y minimalista, con exportación a PDF. Funciona 100% en el navegador, sin backend.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

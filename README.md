@@ -95,7 +95,7 @@ The live canvas shows a subtle **blue line** at every page-break boundary (every
 
 ```bash
 # Export
-Menu (⋯) → Save JSON → saves <name>_data.json
+Menu (⋯) → Save JSON → saves denoise_cv.json (to your browser's Downloads folder)
 
 # Import
 Menu (⋯) → Import → select a .json file
@@ -216,9 +216,10 @@ Menu (⋯) → Import → select the exported .pdf
 | [React](https://react.dev) | 19 | UI framework |
 | [Vite](https://vitejs.dev) | 6 | Build tool & dev server |
 | [TypeScript](https://www.typescriptlang.org) | 5.8 | Type safety |
-| [Tailwind CSS](https://tailwindcss.com) | CDN | Styling |
+| [Tailwind CSS](https://tailwindcss.com) | 3.4 (PostCSS) | Styling — self-hosted, no CDN |
 | [Lucide React](https://lucide.dev) | latest | Icons |
-| [html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) | CDN | PDF generation via html2canvas + jsPDF |
+| [@react-pdf/renderer](https://react-pdf.org) | 4 | Native PDF generation (lazy-loaded) |
+| [Fontsource](https://fontsource.org) | 5 | Self-hosted Inter + Merriweather fonts (no Google Fonts) |
 
 ---
 
