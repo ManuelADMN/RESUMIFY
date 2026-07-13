@@ -74,6 +74,9 @@ const App: React.FC = () => {
   const handleFollowClick = () => {
     window.open(DENOISE_LINKEDIN_URL, '_blank', 'noopener,noreferrer');
     if (hasClickedFollow) return; // don't restart the wait on repeat clicks
+    // Persist as soon as they click "Follow" so the gate never reappears in this
+    // browser, even if they close the tab before pressing "Continue".
+    localStorage.setItem('resumify_followed_linkedin', 'true');
     setHasClickedFollow(true);
     waitTimerRef.current = setTimeout(() => setFollowReady(true), 20000);
   };
