@@ -10,13 +10,13 @@ const LABELS: Record<string, Record<string, string>> = {
     summary: 'Resumen', education: 'Educación', experience: 'Experiencia',
     projects: 'Proyectos', certifications: 'Certificaciones', skills: 'Habilidades',
     technicalSkills: 'Habilidades Técnicas', languages: 'Idiomas',
-    workshops: 'Talleres / Conferencias', links: 'Enlaces',
+    workshops: 'Talleres y Conferencias', links: 'Enlaces',
   },
   en: {
     summary: 'Summary', education: 'Education', experience: 'Experience',
     projects: 'Projects', certifications: 'Certifications', skills: 'Skills',
     technicalSkills: 'Technical Skills', languages: 'Languages',
-    workshops: 'Workshops / Conferences', links: 'Links',
+    workshops: 'Workshops and Conferences', links: 'Links',
   },
 };
 
